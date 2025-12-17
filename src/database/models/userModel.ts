@@ -29,6 +29,8 @@ export const createUser = async (userData: UserInsert): Promise<User> => {
       userData.streak,
       userData.longest_streak,
       userData.exp,
+      userData.last_logged_at || null,
+      userData.earned_badges || null,
     ]
   );
 
@@ -73,7 +75,7 @@ export const getCurrentUser = async (): Promise<User | null> => {
  */
 export const updateUser = async (
   userId: number,
-  updates: Partial<User>
+  updates: Partial<UserInsert>
 ): Promise<void> => {
   const db = await openDatabase();
 

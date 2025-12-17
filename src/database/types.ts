@@ -81,10 +81,7 @@ export interface Meal {
 }
 
 // For inserting a new user (omit auto-generated fields)
-export type UserInsert = Omit<
-  User,
-  "id" | "created_at" | "last_logged_at" | "earned_badges"
->;
+export type UserInsert = Omit<User, "id" | "created_at">;
 
 // For inserting a new meal
 export type MealInsert = Omit<Meal, "id" | "created_at">;
@@ -93,13 +90,7 @@ export type MealInsert = Omit<Meal, "id" | "created_at">;
 export type WeightLogInsert = Omit<WeightLog, "id" | "created_at">;
 
 // For inserting a body goal
-export type BodyGoalInsert = Omit<
-  BodyGoal,
-  "id" | "created_at" | "completed_at"
->;
+export type BodyGoalInsert = Omit<BodyGoal, "id" | "created_at">;
 
 // For inserting a meal template
-export type MealTemplateInsert = Omit<
-  MealTemplate,
-  "id" | "created_at" | "last_used_at" | "is_favorite" | "use_count"
->;
+export type MealTemplateInsert = Omit<MealTemplate, "id" | "created_at">;
