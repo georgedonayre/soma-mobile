@@ -1,11 +1,5 @@
-import { StyleSheet, Text } from "react-native";
+import { ThemedText } from "../components/themed-text";
 
 export default function OnboardingScreen() {
-  return <Text style={styles.modalStyles}>Onboarding go here</Text>;
+  return <ThemedText>Onboarding go here</ThemedText>;
 }
-
-const styles = StyleSheet.create({
-  modalStyles: {
-    color: "white",
-  },
-});
