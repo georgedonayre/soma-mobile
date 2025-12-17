@@ -1,7 +1,7 @@
 // screens/onboarding/steps.tsx
 import type { NutritionTargets, OnboardingData } from "@/src/types/onboarding";
 import React from "react";
-import { Controller } from "react-hook-form";
+import { Controller, useFormState } from "react-hook-form";
 import {
   TextInput,
   TouchableOpacity,
@@ -74,7 +74,6 @@ export function Step1({ control, errors, onNext }: any) {
 // Step 2: Age & Sex
 export function Step2({
   control,
-  errors,
   selectedSex,
   setSelectedSex,
   onNext,
@@ -82,6 +81,9 @@ export function Step2({
 }: any) {
   const colorScheme = useColorScheme() ?? "dark";
   const theme = Colors[colorScheme];
+  const { errors } = useFormState({ control });
+  console.log("STEP 2 ERRORS");
+  console.log("Step2 errors:", errors); // ← Add this
 
   return (
     <View style={styles.stepContainer}>
@@ -158,6 +160,11 @@ export function Step2({
               </View>
             )}
           />
+          {errors.sex && (
+            <ThemedText style={styles.errorText}>
+              {errors.sex.message}
+            </ThemedText>
+          )}
         </View>
       </View>
 
@@ -282,6 +289,7 @@ export function Step4({
   onNext,
   onBack,
   control,
+  errors,
 }: any) {
   const colorScheme = useColorScheme() ?? "dark";
   const theme = Colors[colorScheme];
@@ -363,6 +371,12 @@ export function Step4({
             </View>
           )}
         />
+
+        {errors.goal && (
+          <ThemedText style={styles.errorText}>
+            {errors.goal.message}
+          </ThemedText>
+        )}
       </View>
 
       <View style={styles.buttonRow}>
@@ -394,6 +408,7 @@ export function Step5({
   onNext,
   onBack,
   control,
+  errors,
 }: any) {
   const colorScheme = useColorScheme() ?? "dark";
   const theme = Colors[colorScheme];
@@ -512,6 +527,11 @@ export function Step5({
             </View>
           )}
         />
+        {errors.activity_level && (
+          <ThemedText style={styles.errorText}>
+            {errors.activity_level.message}
+          </ThemedText>
+        )}
       </View>
 
       <View style={styles.buttonRow}>

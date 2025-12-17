@@ -16,3 +16,11 @@ export type NutritionTargets = {
   maintaining_calorie: number;
   calorie_deficit: number;
 };
+
+export const stepFields: Record<number, (keyof OnboardingData)[]> = {
+  1: ["name"],
+  2: ["age", "sex"],
+  3: ["height", "weight"],
+  4: ["goal"],
+  5: ["activity_level"],
+};

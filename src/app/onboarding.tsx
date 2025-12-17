@@ -8,7 +8,7 @@ import {
   Step6,
 } from "@/src/components/onboarding/steps";
 import * as UserModel from "@/src/database/models/userModel";
-import type { OnboardingData } from "@/src/types/onboarding";
+import { stepFields, type OnboardingData } from "@/src/types/onboarding";
 import { Stack, useRouter } from "expo-router";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -40,15 +40,33 @@ export default function Onboarding() {
   const {
     control,
     handleSubmit,
+    trigger,
     getValues,
     formState: { errors },
-  } = useForm<OnboardingData>();
+  } = useForm<OnboardingData>({
+    mode: "onTouched",
+    reValidateMode: "onChange",
+  });
 
   const totalSteps = 6;
   const progress = (currentStep / totalSteps) * 100;
 
-  const goToNextStep = () => setCurrentStep((prev) => prev + 1);
-  const goToPrevStep = () => setCurrentStep((prev) => prev - 1);
+  const goToNextStep = async () => {
+    console.log("NEXT STEP IS CLICKED");
+    const fields = stepFields[currentStep];
+    const isValid = await trigger(fields);
+
+    console.log("TRIGGER A RERENDER");
+    console.log(errors);
+    if (!isValid) return;
+    console.log("IS VALID");
+
+    setCurrentStep((prev) => prev + 1);
+  };
+
+  const goToPrevStep = async () => {
+    setCurrentStep((prev) => prev - 1);
+  };
 
   const onFinish = async () => {
     const formData = getValues();
@@ -118,6 +136,7 @@ export default function Onboarding() {
             onNext={goToNextStep}
             onBack={goToPrevStep}
             control={control}
+            errors={errors}
           />
         );
       case 5:
@@ -128,6 +147,7 @@ export default function Onboarding() {
             onNext={goToNextStep}
             onBack={goToPrevStep}
             control={control}
+            errors={errors}
           />
         );
       case 6:
