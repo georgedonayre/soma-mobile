@@ -28,13 +28,6 @@ export default function Onboarding() {
   const colorScheme = useColorScheme() ?? "dark";
   const theme = Colors[colorScheme];
   const [currentStep, setCurrentStep] = useState(1);
-  const [selectedSex, setSelectedSex] = useState<"male" | "female">("male");
-  const [selectedGoal, setSelectedGoal] = useState<
-    "lose" | "maintain" | "gain" | ""
-  >("");
-  const [selectedActivity, setSelectedActivity] = useState<
-    "sedentary" | "light" | "moderate" | "active" | "extra" | ""
-  >("");
 
   const router = useRouter();
   const {
@@ -105,16 +98,11 @@ export default function Onboarding() {
   const renderStep = () => {
     switch (currentStep) {
       case 1:
-        return (
-          <Step1 control={control} errors={errors} onNext={goToNextStep} />
-        );
+        return <Step1 control={control} onNext={goToNextStep} />;
       case 2:
         return (
           <Step2
             control={control}
-            errors={errors}
-            selectedSex={selectedSex}
-            setSelectedSex={setSelectedSex}
             onNext={goToNextStep}
             onBack={goToPrevStep}
           />
@@ -123,7 +111,6 @@ export default function Onboarding() {
         return (
           <Step3
             control={control}
-            errors={errors}
             onNext={goToNextStep}
             onBack={goToPrevStep}
           />
@@ -131,23 +118,17 @@ export default function Onboarding() {
       case 4:
         return (
           <Step4
-            selectedGoal={selectedGoal}
-            setSelectedGoal={setSelectedGoal}
             onNext={goToNextStep}
             onBack={goToPrevStep}
             control={control}
-            errors={errors}
           />
         );
       case 5:
         return (
           <Step5
-            selectedActivity={selectedActivity}
-            setSelectedActivity={setSelectedActivity}
             onNext={goToNextStep}
             onBack={goToPrevStep}
             control={control}
-            errors={errors}
           />
         );
       case 6:
@@ -156,9 +137,6 @@ export default function Onboarding() {
             data={getValues()}
             targets={calculateTargets({
               ...getValues(),
-              sex: selectedSex as any,
-              goal: selectedGoal as any,
-              activity_level: selectedActivity as any,
             })}
             onFinish={onFinish}
             onBack={goToPrevStep}

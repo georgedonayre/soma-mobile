@@ -73,13 +73,7 @@ export function Step1({ control, onNext }: any) {
 }
 
 // Step 2: Age & Sex
-export function Step2({
-  control,
-  selectedSex,
-  setSelectedSex,
-  onNext,
-  onBack,
-}: any) {
+export function Step2({ control, onNext, onBack }: any) {
   const colorScheme = useColorScheme() ?? "dark";
   const theme = Colors[colorScheme];
   const { errors } = useFormState<OnboardingData>({ control });
@@ -285,13 +279,7 @@ export function Step3({ control, onNext, onBack }: any) {
 }
 
 // Step 4: Goal
-export function Step4({
-  selectedGoal,
-  setSelectedGoal,
-  onNext,
-  onBack,
-  control,
-}: any) {
+export function Step4({ onNext, onBack, control }: any) {
   const colorScheme = useColorScheme() ?? "dark";
   const theme = Colors[colorScheme];
   const { errors } = useFormState<OnboardingData>({ control });
@@ -318,7 +306,6 @@ export function Step4({
                   ],
                 ]}
                 onPress={() => {
-                  setSelectedGoal("lose");
                   onChange("lose");
                 }}
               >
@@ -338,7 +325,6 @@ export function Step4({
                   ],
                 ]}
                 onPress={() => {
-                  setSelectedGoal("maintain");
                   onChange("maintain");
                 }}
               >
@@ -360,7 +346,6 @@ export function Step4({
                   ],
                 ]}
                 onPress={() => {
-                  setSelectedGoal("gain");
                   onChange("gain");
                 }}
               >
@@ -404,13 +389,7 @@ export function Step4({
 }
 
 // Step 5: Activity Level
-export function Step5({
-  selectedActivity,
-  setSelectedActivity,
-  onNext,
-  onBack,
-  control,
-}: any) {
+export function Step5({ onNext, onBack, control }: any) {
   const colorScheme = useColorScheme() ?? "dark";
   const theme = Colors[colorScheme];
   const { errors } = useFormState<OnboardingData>({ control });
@@ -437,7 +416,6 @@ export function Step5({
                   ],
                 ]}
                 onPress={() => {
-                  setSelectedActivity("sedentary");
                   onChange("sedentary");
                 }}
               >
@@ -456,7 +434,6 @@ export function Step5({
                   ],
                 ]}
                 onPress={() => {
-                  setSelectedActivity("light");
                   onChange("light");
                 }}
               >
@@ -477,7 +454,6 @@ export function Step5({
                   ],
                 ]}
                 onPress={() => {
-                  setSelectedActivity("moderate");
                   onChange("moderate");
                 }}
               >
@@ -498,7 +474,6 @@ export function Step5({
                   ],
                 ]}
                 onPress={() => {
-                  setSelectedActivity("active");
                   onChange("active");
                 }}
               >
@@ -517,7 +492,6 @@ export function Step5({
                   ],
                 ]}
                 onPress={() => {
-                  setSelectedActivity("extra");
                   onChange("extra");
                 }}
               >

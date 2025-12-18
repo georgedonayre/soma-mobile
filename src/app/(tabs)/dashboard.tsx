@@ -1,19 +1,21 @@
+import { getCurrentUser } from "@/src/database/models/userModel";
 import { User } from "@/src/database/types";
 import { Link } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
 
 export default function HomeScreen() {
   const [user, setUser] = useState<User | null>(null);
   // Load data when component mounts
-  // useEffect(() => {
-  //   const loadData = async () => {
-  //     const currentUser = await getCurrentUser();
-  //     setUser(currentUser);
-  //   };
+  useEffect(() => {
+    const loadData = async () => {
+      const currentUser = await getCurrentUser();
+      // await dropAllTables();
+      setUser(currentUser);
+    };
 
-  //   loadData();
-  // }, []);
+    loadData();
+  }, []);
 
   return (
     <>
