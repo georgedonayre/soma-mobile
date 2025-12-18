@@ -22,7 +22,7 @@ import {
 } from "react-native";
 import { ThemedView } from "../components/themed-view";
 import { Colors } from "../theme";
-import { calculateTargets } from "../util/onboarding";
+import { calculateTargets } from "../utils/onboarding";
 
 export default function Onboarding() {
   const colorScheme = useColorScheme() ?? "dark";
@@ -32,7 +32,6 @@ export default function Onboarding() {
   const router = useRouter();
   const {
     control,
-    handleSubmit,
     trigger,
     getValues,
     formState: { errors },
