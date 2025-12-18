@@ -32,8 +32,8 @@ export default function Dashboard() {
   useEffect(() => {
     const loadData = async () => {
       const currentUser = await getCurrentUser();
-      if (!user) return;
       setUser(currentUser);
+      if (!user) return;
 
       const currentMeals = await getMealsByDate(
         user.id,

@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
@@ -21,6 +22,7 @@ export default function QuickActions({ theme }: QuickActionsProps) {
         <TouchableOpacity
           style={[styles.actionButton, styles.primaryAction]}
           activeOpacity={0.7}
+          onPress={() => router.push("/screens/food-search")}
         >
           <Ionicons name="add" size={24} color="#FFFFFF" />
           <Text style={styles.primaryActionText}>Add Meal</Text>
