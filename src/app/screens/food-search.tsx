@@ -186,6 +186,10 @@ export default function FoodSearchScreen() {
                     onPress={() => {
                       // Placeholder - do nothing for now
                       console.log("Selected food:", food.description);
+                      console.log(
+                        "SELECTED info:\n",
+                        JSON.stringify(food, null, 2)
+                      );
                     }}
                   />
                 ))}

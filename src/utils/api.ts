@@ -32,7 +32,7 @@ export const searchFoods = async (
   try {
     const url = `${USDA_BASE_URL}/foods/search?api_key=${USDA_API_KEY}&query=${encodeURIComponent(
       query
-    )}&pageSize=${pageSize}&pageNumber=${pageNumber}`;
+    )}&pageSize=${pageSize}&pageNumber=${pageNumber}&dataType=Foundation,Survey (FNDDS)`;
 
     const response = await fetch(url);
 
@@ -48,23 +48,32 @@ export const searchFoods = async (
   }
 };
 
-// Helper to extract specific nutrient value
-export const getNutrientValue = (
-  food: FoodSearchResult,
-  nutrientName: string
-): number => {
-  const nutrient = food.foodNutrients.find(
-    (n) => n.nutrientName.toLowerCase() === nutrientName.toLowerCase()
-  );
-  return nutrient ? nutrient.value : 0;
-};
+const NUTRIENT_IDS = {
+  protein: 1003,
+  fat: 1004,
+  carbs: 1005,
 
-// Helper to get common macros
+  // Energy priority
+  energyPreferred: 2048,
+  energyFallback: 1008,
+};
+const getNutrientById = (
+  food: FoodSearchResult,
+  nutrientId: number
+): number => {
+  return (
+    food.foodNutrients.find((n) => n.nutrientId === nutrientId)?.value ?? 0
+  );
+};
 export const getFoodMacros = (food: FoodSearchResult) => {
+  const calories =
+    getNutrientById(food, NUTRIENT_IDS.energyPreferred) ||
+    getNutrientById(food, NUTRIENT_IDS.energyFallback);
+
   return {
-    calories: getNutrientValue(food, "Energy"),
-    protein: getNutrientValue(food, "Protein"),
-    carbs: getNutrientValue(food, "Carbohydrate, by difference"),
-    fat: getNutrientValue(food, "Total lipid (fat)"),
+    calories,
+    protein: getNutrientById(food, NUTRIENT_IDS.protein),
+    carbs: getNutrientById(food, NUTRIENT_IDS.carbs),
+    fat: getNutrientById(food, NUTRIENT_IDS.fat),
   };
 };
