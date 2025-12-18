@@ -13,9 +13,10 @@ import { Colors } from "../../theme";
 import { styles } from "./styles";
 
 // Step 1: Name
-export function Step1({ control, errors, onNext }: any) {
+export function Step1({ control, onNext }: any) {
   const colorScheme = useColorScheme() ?? "dark";
   const theme = Colors[colorScheme];
+  const { errors } = useFormState<OnboardingData>({ control });
 
   return (
     <View style={styles.stepContainer}>
@@ -81,7 +82,7 @@ export function Step2({
 }: any) {
   const colorScheme = useColorScheme() ?? "dark";
   const theme = Colors[colorScheme];
-  const { errors } = useFormState({ control });
+  const { errors } = useFormState<OnboardingData>({ control });
   console.log("STEP 2 ERRORS");
   console.log("Step2 errors:", errors); // ← Add this
 
@@ -191,9 +192,10 @@ export function Step2({
 }
 
 // Step 3: Height & Weight
-export function Step3({ control, errors, onNext, onBack }: any) {
+export function Step3({ control, onNext, onBack }: any) {
   const colorScheme = useColorScheme() ?? "dark";
   const theme = Colors[colorScheme];
+  const { errors } = useFormState<OnboardingData>({ control });
 
   return (
     <View style={styles.stepContainer}>
@@ -289,10 +291,10 @@ export function Step4({
   onNext,
   onBack,
   control,
-  errors,
 }: any) {
   const colorScheme = useColorScheme() ?? "dark";
   const theme = Colors[colorScheme];
+  const { errors } = useFormState<OnboardingData>({ control });
 
   return (
     <View style={styles.stepContainer}>
@@ -408,10 +410,10 @@ export function Step5({
   onNext,
   onBack,
   control,
-  errors,
 }: any) {
   const colorScheme = useColorScheme() ?? "dark";
   const theme = Colors[colorScheme];
+  const { errors } = useFormState<OnboardingData>({ control });
 
   return (
     <View style={styles.stepContainer}>
