@@ -15,6 +15,8 @@ export const Colors = {
     icon: "#5C5C5C", // medium gray icons
     tabIconDefault: "#5C5C5C",
     tabIconSelected: tintColorLight,
+    cardBg: "#FFFFFF", // white cards on light gray background
+    border: "#E5E5E5", // subtle borders
   },
   dark: {
     text: "#E0E0E0", // light gray text
@@ -23,6 +25,8 @@ export const Colors = {
     icon: "#7D8C84", // muted gray-green icons
     tabIconDefault: "#7D8C84",
     tabIconSelected: tintColorDark,
+    cardBg: "#1A2621", // slightly lighter than background for cards
+    border: "#2A3A32", // subtle green-tinted border
   },
 };
 

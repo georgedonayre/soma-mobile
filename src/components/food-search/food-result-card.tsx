@@ -1,5 +1,5 @@
-// components/food-search/FoodResultCard.tsx
 import { FoodSearchResult, getFoodMacros } from "@/src/utils/api";
+import { router } from "expo-router";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
@@ -9,12 +9,8 @@ interface FoodResultCardProps {
   onPress?: () => void;
 }
 
-export default function FoodResultCard({
-  food,
-  theme,
-  onPress,
-}: FoodResultCardProps) {
-  const macros = getFoodMacros(food);
+export default function FoodResultCard({ food, theme }: FoodResultCardProps) {
+  const macros = getFoodMacros(food); // returns an object with calories, protein, carbs, and fat
 
   return (
     <TouchableOpacity
@@ -23,7 +19,16 @@ export default function FoodResultCard({
         { backgroundColor: theme.background, borderColor: theme.icon + "20" },
       ]}
       activeOpacity={0.7}
-      onPress={onPress}
+      onPress={() => {
+        router.push({
+          pathname: `/screens/log-food/[fdcId]`,
+          params: {
+            fdcId: food.fdcId,
+            food: JSON.stringify(food),
+            macros: JSON.stringify(macros),
+          },
+        });
+      }}
     >
       <View style={styles.content}>
         <Text style={[styles.name, { color: theme.text }]} numberOfLines={2}>
@@ -76,11 +81,10 @@ export default function FoodResultCard({
           </View>
         </View>
 
-        {food.servingSize && food.servingSizeUnit && (
-          <Text style={[styles.serving, { color: theme.icon }]}>
-            Serving: {food.servingSize} {food.servingSizeUnit}
-          </Text>
-        )}
+        <Text style={[styles.serving, { color: theme.icon }]}>
+          Serving: {food.servingSize ? food.servingSize : 100}{" "}
+          {food.servingSizeUnit ? food.servingSizeUnit : "g"}
+        </Text>
       </View>
     </TouchableOpacity>
   );
@@ -89,44 +93,41 @@ export default function FoodResultCard({
 const styles = StyleSheet.create({
   container: {
     borderRadius: 12,
-    borderWidth: 1,
     padding: 16,
     marginBottom: 12,
+    borderWidth: 1,
   },
   content: {
     gap: 8,
   },
   name: {
     fontSize: 16,
-    fontWeight: "500",
-    lineHeight: 22,
+    fontWeight: "600",
   },
   brand: {
-    fontSize: 13,
-    marginTop: -4,
+    fontSize: 14,
   },
   macrosRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 4,
+    marginTop: 8,
   },
   macroItem: {
     flex: 1,
     alignItems: "center",
   },
   macroValue: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: "600",
   },
   macroLabel: {
-    fontSize: 11,
+    fontSize: 12,
     marginTop: 2,
   },
   macroDivider: {
     width: 1,
     height: 24,
-    backgroundColor: "#E0E0E0",
-    opacity: 0.3,
+    backgroundColor: "#E5E5E5",
   },
   serving: {
     fontSize: 12,

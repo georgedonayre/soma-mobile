@@ -179,19 +179,7 @@ export default function FoodSearchScreen() {
             {!isLoading && results.length > 0 && (
               <>
                 {results.map((food) => (
-                  <FoodResultCard
-                    key={food.fdcId}
-                    food={food}
-                    theme={theme}
-                    onPress={() => {
-                      // Placeholder - do nothing for now
-                      console.log("Selected food:", food.description);
-                      console.log(
-                        "SELECTED info:\n",
-                        JSON.stringify(food, null, 2)
-                      );
-                    }}
-                  />
+                  <FoodResultCard key={food.fdcId} food={food} theme={theme} />
                 ))}
 
                 {/* Show More Button - Placeholder */}
