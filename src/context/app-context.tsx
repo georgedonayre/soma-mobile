@@ -30,30 +30,34 @@ export const AppProvider = ({ children }: Props) => {
   const router = useRouter();
 
   useEffect(() => {
+    console.log("🟢 AppProvider: useEffect triggered");
+
     const setupApp = async () => {
       try {
-        // 1️⃣ Initialize DB
+        console.log("🟢 AppProvider: Starting setup...");
         await initializeDatabase();
+        console.log("🟢 AppProvider: DB initialized");
 
-        // 2️⃣ Load user
         const existingUser = await getCurrentUser();
+        console.log("🟢 AppProvider: User loaded:", existingUser);
 
-        // 3️⃣ Onboarding redirect
         if (!existingUser || existingUser.onboarded === 0) {
-          router.replace("/onboarding"); // redirect if not onboarded
+          console.log("🟢 AppProvider: Redirecting to onboarding");
+          router.replace("/onboarding");
         } else {
-          setUser(existingUser); // otherwise, set user
+          console.log("🟢 AppProvider: Setting user");
+          setUser(existingUser);
         }
 
-        // 4️⃣ Mark DB ready
         setIsDbReady(true);
+        console.log("🟢 AppProvider: Setup complete");
       } catch (err) {
-        console.error("Failed to initialize app:", err);
+        console.error("❌ AppProvider: Setup failed:", err);
       }
     };
 
     setupApp();
-  }, [router]);
+  }, []); // Make sure this is empty!
 
   return (
     <AppContext.Provider value={{ isDbReady, user }}>

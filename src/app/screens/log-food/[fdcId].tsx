@@ -2,10 +2,13 @@
 import { MacroDisplay } from "@/src/components/log-food/macro-display";
 import { QuickSelectPresets } from "@/src/components/log-food/quick-select-presets";
 import { ServingSizeInput } from "@/src/components/log-food/serving-size-input";
+import { useAppContext } from "@/src/context/app-context";
+import { createMeal } from "@/src/database/models/mealModel";
 import { useServingSize } from "@/src/hooks/use-serving-size";
 import { Colors } from "@/src/theme";
 import { FoodSearchResult } from "@/src/utils/api";
 import { Ionicons } from "@expo/vector-icons";
+import { format } from "date-fns";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import {
@@ -35,6 +38,7 @@ export default function LogFoodScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme() ?? "dark";
   const theme = Colors[colorScheme];
+  const { user, isDbReady } = useAppContext();
 
   // Parse the food data from params
   const food: FoodSearchResult = params.food ? JSON.parse(params.food) : null;
@@ -62,10 +66,26 @@ export default function LogFoodScreen() {
       </SafeAreaView>
     );
   }
+  const handleConfirm = async () => {
+    if (!user) return; // safety check from context
 
-  const handleConfirm = () => {
-    // TODO: Save the food log data
-    router.push("/dashboard");
+    try {
+      await createMeal({
+        user_id: user.id,
+        description: food.description,
+        total_calories: adjustedMacros.calories,
+        protein: adjustedMacros.protein,
+        carbs: adjustedMacros.carbs,
+        fat: adjustedMacros.fat,
+        date: format(new Date(), "yyyy-MM-dd"), // format using date-fns
+        template_id: null, // or selected template if you add that feature
+      });
+
+      router.push("/dashboard"); // navigate back
+    } catch (err) {
+      console.error("Failed to log meal:", err);
+      // Optionally show a toast/snackbar
+    }
   };
 
   const handleBack = () => {

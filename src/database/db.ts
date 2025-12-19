@@ -2,19 +2,20 @@ import * as SQLite from "expo-sqlite";
 
 // Database name - this will be stored in the device's filesystem
 const DATABASE_NAME = "fitness_app.db";
-let db: SQLite.SQLiteDatabase | null = null;
+let dbInstance: SQLite.SQLiteDatabase | null = null;
 
 /**
  * Opens or creates the SQLite database
  */
 export const openDatabase = async (): Promise<SQLite.SQLiteDatabase> => {
   try {
-    // Open the database (creates it if it doesn't exist)
-    db = await SQLite.openDatabaseAsync(DATABASE_NAME);
-    console.log("✅ Database opened successfully");
-    return db;
+    if (!dbInstance) {
+      dbInstance = await SQLite.openDatabaseAsync(DATABASE_NAME);
+      console.log("✅ Database opened successfully");
+    }
+    return dbInstance;
   } catch (error) {
-    console.error("❌ Error opening database:", error);
+    console.error("❌ openDatabase: Failed:", error);
     throw error;
   }
 };

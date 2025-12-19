@@ -35,7 +35,7 @@ export default function MacroSummary({
       <View style={styles.caloriesSection}>
         <View style={styles.numberRow}>
           <Text style={[styles.caloriesNumber, { color: theme.text }]}>
-            {dailyTotals.calories}
+            {dailyTotals.calories.toFixed(0)}
           </Text>
           <Text style={[styles.caloriesTarget, { color: theme.icon }]}>
             / {targets.calories}
@@ -61,7 +61,7 @@ export default function MacroSummary({
       <View style={styles.proteinSection}>
         <View style={styles.numberRow}>
           <Text style={[styles.proteinNumber, { color: theme.text }]}>
-            {dailyTotals.protein}g
+            {dailyTotals.protein.toFixed(0)}g
           </Text>
           <Text style={[styles.proteinTarget, { color: theme.icon }]}>
             / {targets.protein}g
@@ -96,7 +96,7 @@ export default function MacroSummary({
             Carbs
           </Text>
           <Text style={[styles.tertiaryNumber, { color: theme.text }]}>
-            {dailyTotals.carbs}g{" "}
+            {dailyTotals.carbs.toFixed(0)}g{" "}
             <Text style={[styles.tertiaryTarget, { color: theme.icon }]}>
               / {targets.carbs}g
             </Text>
@@ -105,7 +105,7 @@ export default function MacroSummary({
         <View style={styles.macroItem}>
           <Text style={[styles.tertiaryLabel, { color: theme.icon }]}>Fat</Text>
           <Text style={[styles.tertiaryNumber, { color: theme.text }]}>
-            {dailyTotals.fat}g{" "}
+            {dailyTotals.fat.toFixed(0)}g{" "}
             <Text style={[styles.tertiaryTarget, { color: theme.icon }]}>
               / {targets.fat}g
             </Text>

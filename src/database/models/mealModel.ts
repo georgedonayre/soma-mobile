@@ -7,34 +7,53 @@ import { Meal, MealInsert } from "../types";
  * If template_id is provided, the trigger will automatically update template usage
  */
 export const createMeal = async (mealData: MealInsert): Promise<Meal> => {
-  const db = await openDatabase();
+  console.log("🔵 createMeal: Starting...");
 
-  const result = await db.runAsync(
-    `INSERT INTO meals (
-      user_id, description, total_calories, protein, carbs, fat, date, template_id
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-      mealData.user_id,
-      mealData.description,
-      mealData.total_calories,
-      mealData.protein,
-      mealData.carbs,
-      mealData.fat,
-      mealData.date,
-      mealData.template_id || null,
-    ]
-  );
+  try {
+    console.log("🔵 createMeal: Opening database...");
+    const db = await openDatabase();
+    console.log("🔵 createMeal: Database opened successfully");
+    console.log("🔵 createMeal: DB object:", db); // ⭐ ADD THIS
+    console.log("🔵 createMeal: DB is null?", db === null); // ⭐ ADD THISc
+    console.log("🔵 createMeal: Inserting meal...", mealData);
 
-  const meal = await db.getFirstAsync<Meal>(
-    "SELECT * FROM meals WHERE id = ?",
-    [result.lastInsertRowId]
-  );
+    const result = await db.runAsync(
+      `INSERT INTO meals (
+        user_id, description, total_calories, protein, carbs, fat, date, template_id
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        mealData.user_id,
+        mealData.description,
+        mealData.total_calories,
+        mealData.protein,
+        mealData.carbs,
+        mealData.fat,
+        mealData.date,
+        mealData.template_id || null,
+      ]
+    );
+    console.log(
+      "🔵 createMeal: Insert successful, ID:",
+      result.lastInsertRowId
+    );
 
-  if (!meal) {
-    throw new Error("Failed to create meal");
+    console.log("🔵 createMeal: Fetching created meal...");
+    const meal = await db.getFirstAsync<Meal>(
+      "SELECT * FROM meals WHERE id = ?",
+      [result.lastInsertRowId]
+    );
+    console.log("🔵 createMeal: Meal fetched:", meal);
+
+    if (!meal) {
+      throw new Error("Failed to create meal");
+    }
+
+    console.log("✅ createMeal: Complete!");
+    return meal;
+  } catch (error) {
+    console.error("❌ createMeal: Error at some point:", error);
+    throw error;
   }
-
-  return meal;
 };
 
 /**
