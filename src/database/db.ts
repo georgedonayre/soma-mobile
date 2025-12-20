@@ -78,6 +78,23 @@ export const initializeDatabase = async (): Promise<void> => {
       );
     `);
 
+    // Create barcode_foods table
+    await db.execAsync(`
+  CREATE TABLE IF NOT EXISTS "barcode_foods" (
+    "barcode" TEXT PRIMARY KEY,
+    "product_name" TEXT NOT NULL,
+    "serving_size" REAL NOT NULL CHECK (serving_size > 0),
+    "serving_unit" TEXT NOT NULL,
+    "calories" REAL NOT NULL CHECK (calories >= 0),
+    "protein" REAL NOT NULL CHECK (protein >= 0),
+    "carbs" REAL NOT NULL CHECK (carbs >= 0),
+    "fat" REAL NOT NULL CHECK (fat >= 0),
+    "created_at" TEXT DEFAULT CURRENT_TIMESTAMP
+  );
+`);
+
+    console.log("✅ barcode_foods table created");
+
     // Create weight_logs table
     await db.execAsync(`
       CREATE TABLE IF NOT EXISTS "weight_logs" (
