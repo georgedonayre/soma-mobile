@@ -1,5 +1,4 @@
-// app/log-food/ai-review.tsx
-import { MealForm } from "@/src/components/log-food/meal-form";
+import { AIMealReviewForm } from "@/src/components/log-food/ai-meal-review-form";
 import { useAppContext } from "@/src/context/app-context";
 import { createMeal } from "@/src/database/models/mealModel";
 import { Colors } from "@/src/theme";
@@ -41,20 +40,10 @@ export default function AIReviewScreen() {
     : null;
   const originalInput = params.originalInput || "";
 
-  // Set up base macros from AI estimate
-  const baseMacros: Macros | null = estimate
-    ? {
-        calories: estimate.total_calories,
-        protein: estimate.protein,
-        carbs: estimate.carbs,
-        fat: estimate.fat,
-      }
-    : null;
-
   const [showAssumptions, setShowAssumptions] = useState(false);
 
   // Error state
-  if (!estimate || !baseMacros) {
+  if (!estimate) {
     return (
       <View
         style={[styles.errorContainer, { backgroundColor: theme.background }]}
@@ -194,19 +183,16 @@ export default function AIReviewScreen() {
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
-      <MealForm
-        title="Review Meal"
+      <AIMealReviewForm
+        title="Review AI Estimate"
         onBack={handleBack}
-        mealName={estimate.description}
+        mealDescription={estimate.description}
+        items={estimate.items}
         headerContent={headerContent}
-        baseMacros={baseMacros}
-        originalServingSize={100}
-        servingSizeUnit="g"
         onConfirm={handleConfirm}
-        confirmButtonText="Confirm & Log Meal"
       >
         {additionalContent}
-      </MealForm>
+      </AIMealReviewForm>
     </>
   );
 }
@@ -216,61 +202,63 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    padding: 20,
   },
   estimateHeader: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 12,
+    gap: 8,
+    marginBottom: 8,
   },
   estimateTitle: {
     fontSize: 14,
     fontWeight: "600",
-    marginLeft: 6,
   },
   confidenceBadge: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 8,
+    gap: 6,
   },
   confidenceDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    marginRight: 6,
   },
   confidenceText: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: "500",
   },
   infoBox: {
-    marginTop: 12,
-    padding: 12,
-    borderRadius: 8,
+    marginHorizontal: 20,
+    marginBottom: 16,
+    padding: 16,
+    borderRadius: 12,
   },
   infoLabel: {
     fontSize: 12,
     fontWeight: "600",
-    marginBottom: 4,
+    marginBottom: 6,
     textTransform: "uppercase",
   },
   infoText: {
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: 15,
+    lineHeight: 22,
   },
   assumptionsCard: {
-    marginTop: 12,
-    padding: 12,
-    borderRadius: 8,
+    marginHorizontal: 20,
+    marginBottom: 16,
+    padding: 16,
+    borderRadius: 12,
   },
   assumptionsHeader: {
     flexDirection: "row",
     alignItems: "center",
+    gap: 8,
   },
   assumptionsTitle: {
-    fontSize: 14,
-    fontWeight: "500",
     flex: 1,
-    marginLeft: 6,
+    fontSize: 14,
+    fontWeight: "600",
   },
   assumptionsList: {
     marginTop: 12,
@@ -278,16 +266,15 @@ const styles = StyleSheet.create({
   },
   assumptionItem: {
     flexDirection: "row",
-    alignItems: "flex-start",
+    gap: 8,
   },
   bullet: {
-    fontSize: 16,
-    marginRight: 8,
-    marginTop: 2,
+    fontSize: 14,
+    lineHeight: 20,
   },
   assumptionText: {
-    fontSize: 13,
     flex: 1,
-    lineHeight: 18,
+    fontSize: 14,
+    lineHeight: 20,
   },
 });
