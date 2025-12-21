@@ -48,9 +48,9 @@ const LOG_OPTIONS: LogOption[] = [
 ];
 
 const FAB_SIZE = 64;
-const MENU_RADIUS = 100; // Distance from FAB to options
-const SWIPE_THRESHOLD = 40; // Minimum swipe to open menu
-const SELECT_THRESHOLD = 50; // Distance to consider option selected
+const MENU_RADIUS = 90;
+const SWIPE_THRESHOLD = 40;
+const SELECT_THRESHOLD = 60;
 
 export function FabMenu() {
   const router = useRouter();
@@ -99,32 +99,40 @@ export function FabMenu() {
     runOnJS(Haptics.impactAsync)(Haptics.ImpactFeedbackStyle.Light);
   };
 
-  // Calculate option position (semi-circle, top half)
+  // Calculate option position (semi-circle above FAB, 180° arc)
   const getOptionPosition = (index: number, total: number) => {
-    // Spread 180 degrees (from -90 to +90 degrees)
-    const startAngle = -90; // Start at left
-    const endAngle = 90; // End at right
-    const angleRange = endAngle - startAngle;
+    // For a semi-circle ABOVE the FAB (180° arc)
+    // 0° = directly left, 90° = directly up, 180° = directly right
+    // We want items spread from left (180°) to right (0°) in the upper half
 
-    // Calculate angle for this option
-    const angle = startAngle + (angleRange / (total - 1)) * index;
+    let angle: number;
+
+    if (total === 1) {
+      // Single item: place directly above (90°)
+      angle = 90;
+    } else {
+      // Multiple items: spread from 180° (left) to 0° (right)
+      // This creates a semi-circle in the top half
+      angle = 180 - (180 / (total - 1)) * index;
+    }
+
+    // Convert angle to radians for Math functions
     const radian = (angle * Math.PI) / 180;
 
-    return {
-      x: Math.cos(radian) * MENU_RADIUS,
-      y: Math.sin(radian) * MENU_RADIUS,
-    };
+    // Calculate x and y positions
+    // Note: We need to invert y because screen coordinates have y increasing downward
+    const x = Math.cos(radian) * MENU_RADIUS;
+    const y = -Math.sin(radian) * MENU_RADIUS; // Negative to go upward
+
+    return { x, y };
   };
 
-  // Gesture: Pan (swipe)
   const panGesture = Gesture.Pan()
     .onStart(() => {
-      // Start scaling FAB
       fabScale.value = withSpring(1.1);
     })
     .onUpdate((event) => {
       if (!menuOpen) {
-        // Check if swipe distance reaches threshold to open menu
         const swipeDistance = Math.sqrt(
           event.translationX ** 2 + event.translationY ** 2
         );
@@ -133,36 +141,43 @@ export function FabMenu() {
           runOnJS(openMenu)();
         }
       } else {
-        // Menu is open, check for option hover
         const x = event.translationX;
         const y = event.translationY;
         const distanceFromCenter = Math.sqrt(x ** 2 + y ** 2);
 
         if (distanceFromCenter > SELECT_THRESHOLD) {
-          // Calculate which option is being hovered
-          const angle = (Math.atan2(y, x) * 180) / Math.PI; // -180 to 180
+          // Calculate angle from touch position
+          // atan2 gives us angle where 0° = right, 90° = down (screen coords)
+          let angle = (Math.atan2(-y, x) * 180) / Math.PI; // Negate y for screen coords
 
-          // Map angle to option index (0 = leftmost, 2 = rightmost)
-          let optionIndex: number;
+          // Normalize to 0-360
+          if (angle < 0) angle += 360;
 
-          if (angle < -120) optionIndex = 0; // Far left
-          else if (angle < -60) optionIndex = 0; // Left
-          else if (angle < 0) optionIndex = 1; // Center
-          else if (angle < 60) optionIndex = 1; // Center
-          else if (angle < 120) optionIndex = 2; // Right
-          else optionIndex = 2; // Far right
+          // Check if we're in the top half (semi-circle from 0° to 180°)
+          if (angle >= 0 && angle <= 180) {
+            // Map angle to option index
+            // 0° = rightmost option, 180° = leftmost option
+            const optionIndex = Math.round(
+              (180 - angle) / (180 / (LOG_OPTIONS.length - 1))
+            );
 
-          // Ensure index is within bounds
-          optionIndex = Math.max(
-            0,
-            Math.min(LOG_OPTIONS.length - 1, optionIndex)
-          );
+            // Clamp to valid range
+            const clampedIndex = Math.max(
+              0,
+              Math.min(LOG_OPTIONS.length - 1, optionIndex)
+            );
 
-          if (hoveredOption !== optionIndex) {
-            runOnJS(setHoveredOption)(optionIndex);
+            if (hoveredOption !== clampedIndex) {
+              runOnJS(setHoveredOption)(clampedIndex);
+            }
+          } else {
+            // Bottom half - no selection
+            if (hoveredOption !== null) {
+              runOnJS(setHoveredOption)(null);
+            }
           }
         } else {
-          // Too close to center, no option hovered
+          // Too close to center - clear selection
           if (hoveredOption !== null) {
             runOnJS(setHoveredOption)(null);
           }
@@ -171,15 +186,12 @@ export function FabMenu() {
     })
     .onEnd(() => {
       if (menuOpen && hoveredOption !== null) {
-        // Option was selected
         const option = LOG_OPTIONS[hoveredOption];
         runOnJS(Haptics.impactAsync)(Haptics.ImpactFeedbackStyle.Medium);
         runOnJS(navigateToOption)(option);
       } else if (menuOpen) {
-        // No option selected, close menu
         runOnJS(closeMenu)();
       } else {
-        // Menu wasn't opened, return to normal
         fabScale.value = withSpring(1);
       }
     });
@@ -298,6 +310,7 @@ export function FabMenu() {
     </>
   );
 }
+
 const styles = StyleSheet.create({
   backdrop: {
     ...StyleSheet.absoluteFillObject,
@@ -325,9 +338,13 @@ const styles = StyleSheet.create({
   },
   menuContainer: {
     position: "absolute",
-    bottom: Platform.OS === "ios" ? 30 + FAB_SIZE / 2 : 20 + FAB_SIZE / 2,
+    bottom: (Platform.OS === "ios" ? 30 : 20) + FAB_SIZE / 2, // Center at FAB level
     alignSelf: "center",
     zIndex: 997,
+    width: MENU_RADIUS * 2 + 100, // Accommodate full semi-circle width plus labels
+    height: MENU_RADIUS, // Height for semi-circle plus label space
+    justifyContent: "center",
+    alignItems: "center",
   },
   menuItem: {
     position: "absolute",
