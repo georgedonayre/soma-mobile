@@ -1,5 +1,6 @@
 import { Colors } from "@/src/theme";
 import { estimateMealMacros } from "@/src/utils/aiService";
+import { routes } from "@/src/utils/routes";
 import { Ionicons } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
 import React, { useState } from "react";
@@ -39,7 +40,7 @@ export default function AILogFoodScreen() {
 
       // Navigate to review screen with the estimate
       router.push({
-        pathname: "/screens/log-food/ai-review",
+        pathname: routes.aiReview,
         params: {
           estimate: JSON.stringify(estimate),
           originalInput: mealDescription.trim(),

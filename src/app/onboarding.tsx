@@ -23,6 +23,7 @@ import {
 import { ThemedView } from "../components/themed-view";
 import { Colors } from "../theme";
 import { calculateTargets } from "../utils/onboarding";
+import { routes } from "../utils/routes";
 
 export default function Onboarding() {
   const colorScheme = useColorScheme() ?? "dark";
@@ -87,7 +88,7 @@ export default function Onboarding() {
         exp: 0,
       });
 
-      router.replace("/(tabs)/dashboard");
+      router.replace(routes.dashboard);
     } catch (error) {
       console.error("Error saving user:", error);
       alert("Failed to save user data");

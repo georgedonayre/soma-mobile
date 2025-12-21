@@ -1,3 +1,4 @@
+import { routes } from "@/src/utils/routes";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React from "react";
@@ -22,7 +23,7 @@ export default function QuickActions({ theme }: QuickActionsProps) {
         <TouchableOpacity
           style={[styles.actionButton, styles.primaryAction]}
           activeOpacity={0.7}
-          onPress={() => router.push("/screens/food-search")}
+          onPress={() => router.push(routes.usdaSearch)}
         >
           <Ionicons name="add" size={24} color="#FFFFFF" />
           <Text style={styles.primaryActionText}>Add Meal</Text>
@@ -36,7 +37,7 @@ export default function QuickActions({ theme }: QuickActionsProps) {
           ]}
           activeOpacity={0.7}
           onPress={() => {
-            router.push("/screens/barcode-scan");
+            router.push(routes.barcodeScan);
           }}
         >
           <Ionicons name="camera" size={24} color={theme.text} />
@@ -53,7 +54,7 @@ export default function QuickActions({ theme }: QuickActionsProps) {
           ]}
           activeOpacity={0.7}
           onPress={() => {
-            router.push("/screens/log-food/ai");
+            router.push(routes.aiEntry);
           }}
         >
           <Ionicons name="time" size={24} color={theme.text} />

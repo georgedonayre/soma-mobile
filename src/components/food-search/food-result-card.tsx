@@ -1,4 +1,5 @@
 import { FoodSearchResult, getFoodMacros } from "@/src/utils/api";
+import { routes } from "@/src/utils/routes";
 import { router } from "expo-router";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -21,7 +22,7 @@ export default function FoodResultCard({ food, theme }: FoodResultCardProps) {
       activeOpacity={0.7}
       onPress={() => {
         router.push({
-          pathname: `/screens/log-food/[fdcId]`,
+          pathname: routes.usdaReview,
           params: {
             fdcId: food.fdcId,
             food: JSON.stringify(food),
