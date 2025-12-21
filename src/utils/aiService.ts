@@ -1,6 +1,7 @@
 // src/utils/ai-service.ts
 import OpenAI from "openai";
 
+// TODO: make a serparate backend service for this (api calls to groq).
 const GROQ_API_KEY = process.env.EXPO_PUBLIC_GROQ_API_KEY || "";
 
 const client = new OpenAI({
