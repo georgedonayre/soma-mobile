@@ -52,6 +52,9 @@ export default function QuickActions({ theme }: QuickActionsProps) {
             { backgroundColor: theme.icon + "15" },
           ]}
           activeOpacity={0.7}
+          onPress={() => {
+            router.push("/screens/log-food/ai");
+          }}
         >
           <Ionicons name="time" size={24} color={theme.text} />
           <Text style={[styles.secondaryActionText, { color: theme.text }]}>

@@ -94,7 +94,7 @@ export default function LogFoodScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ headerShown: false }} />
+      <Stack.Screen options={{ title: "Log Food" }} />
       <SafeAreaView
         style={[styles.container, { backgroundColor: theme.background }]}
       >
