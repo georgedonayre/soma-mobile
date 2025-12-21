@@ -1,6 +1,5 @@
 // src/components/fab/fab-menu.tsx
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
-import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
@@ -87,7 +86,6 @@ export function FabMenu() {
     fabScale.value = withSpring(1.1);
     menuScale.value = withSpring(1);
     backdropOpacity.value = withTiming(0.5, { duration: 200 });
-    runOnJS(Haptics.impactAsync)(Haptics.ImpactFeedbackStyle.Light);
   };
 
   const closeMenu = () => {
@@ -96,7 +94,6 @@ export function FabMenu() {
     fabScale.value = withSpring(1);
     menuScale.value = withSpring(0);
     backdropOpacity.value = withTiming(0, { duration: 200 });
-    runOnJS(Haptics.impactAsync)(Haptics.ImpactFeedbackStyle.Light);
   };
 
   // Calculate option position (semi-circle above FAB, 180° arc)
@@ -187,7 +184,6 @@ export function FabMenu() {
     .onEnd(() => {
       if (menuOpen && hoveredOption !== null) {
         const option = LOG_OPTIONS[hoveredOption];
-        runOnJS(Haptics.impactAsync)(Haptics.ImpactFeedbackStyle.Medium);
         runOnJS(navigateToOption)(option);
       } else if (menuOpen) {
         runOnJS(closeMenu)();
@@ -202,7 +198,6 @@ export function FabMenu() {
       runOnJS(closeMenu)();
     } else {
       // Tap on FAB - navigate to last selected
-      runOnJS(Haptics.impactAsync)(Haptics.ImpactFeedbackStyle.Light);
       runOnJS(navigateToOption)(currentOption);
     }
   });
