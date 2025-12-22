@@ -8,4 +8,5 @@ export const routes = {
   barcodeScan: "/screens/log-food/barcode/scan",
   barcodeReview: "/screens/log-food/barcode/review",
   createTemplateScreen: "/screens/templates/create-template",
+  templateLogScreen: "/screens/log-food/template/review",
 } as const;
