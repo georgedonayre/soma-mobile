@@ -1,16 +1,33 @@
-// components/dashboard/TemplateCard.tsx
+import { useAppContext } from "@/src/context/app-context";
+import { createMeal } from "@/src/database/models/mealModel";
 import { MealTemplate } from "@/src/database/types";
 import { routes } from "@/src/utils/routes";
-import { router } from "expo-router";
+import { format } from "date-fns";
+import { useRouter } from "expo-router";
 import React from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  Vibration,
+  View,
+} from "react-native";
+import Toast from "react-native-toast-message";
 
 interface TemplateCardProps {
   template: MealTemplate;
   theme: any;
+  onLongPress: () => void;
 }
 
-export default function TemplateCard({ template, theme }: TemplateCardProps) {
+export default function TemplateCard({
+  template,
+  theme,
+  onLongPress,
+}: TemplateCardProps) {
+  const router = useRouter();
+  const { user } = useAppContext();
+
   const handlePress = () => {
     router.push({
       pathname: routes.templateLogScreen,
@@ -18,6 +35,48 @@ export default function TemplateCard({ template, theme }: TemplateCardProps) {
         template: JSON.stringify(template),
       },
     });
+  };
+
+  const handleLongPress = async () => {
+    if (!user) return;
+
+    // Provide haptic feedback
+    Vibration.vibrate(50);
+
+    try {
+      // Quick log the meal with template's default values
+      await createMeal({
+        user_id: user.id,
+        description: template.name,
+        total_calories: template.calories,
+        protein: template.protein,
+        carbs: template.carbs,
+        fat: template.fat,
+        date: format(new Date(), "yyyy-MM-dd"),
+        template_id: template.id,
+      });
+
+      // Show success toast
+      Toast.show({
+        type: "success",
+        text1: "Meal logged! 🎉",
+        text2: `${template.name} added to today`,
+        position: "bottom",
+        visibilityTime: 2000,
+      });
+      if (onLongPress) onLongPress();
+    } catch (err) {
+      console.error("Failed to quick log meal:", err);
+
+      // Show error toast
+      Toast.show({
+        type: "error",
+        text1: "Failed to log meal",
+        text2: "Please try again",
+        position: "bottom",
+        visibilityTime: 2000,
+      });
+    }
   };
 
   return (
@@ -31,6 +90,8 @@ export default function TemplateCard({ template, theme }: TemplateCardProps) {
       ]}
       activeOpacity={0.7}
       onPress={handlePress}
+      onLongPress={handleLongPress}
+      delayLongPress={500}
     >
       {/* Template Name */}
       <Text style={[styles.name, { color: theme.text }]} numberOfLines={2}>

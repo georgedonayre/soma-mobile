@@ -59,6 +59,14 @@ export default function Dashboard() {
     user.daily_fat_target || 65
   );
 
+  const refreshMeals = async () => {
+    const currentMeals = await getMealsByDate(
+      user.id,
+      format(new Date(), "yyyy-MM-dd")
+    );
+    setTodaysMeals(currentMeals);
+  };
+
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
@@ -91,7 +99,11 @@ export default function Dashboard() {
 
           <TodaysMeals meals={todaysMeals} theme={theme} />
 
-          <Templates templates={templates} theme={theme} />
+          <Templates
+            templates={templates}
+            theme={theme}
+            onLongPress={refreshMeals}
+          />
         </ScrollView>
       </SafeAreaView>
     </>

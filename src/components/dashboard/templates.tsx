@@ -16,9 +16,14 @@ import TemplateCard from "./template-card";
 interface TemplatesProps {
   templates: MealTemplate[];
   theme: any;
+  onLongPress: () => void;
 }
 
-export default function Templates({ templates, theme }: TemplatesProps) {
+export default function Templates({
+  templates,
+  theme,
+  onLongPress,
+}: TemplatesProps) {
   const router = useRouter();
 
   const handleCreateTemplate = () => {
@@ -96,6 +101,7 @@ export default function Templates({ templates, theme }: TemplatesProps) {
                 key={template.id}
                 template={template}
                 theme={theme}
+                onLongPress={onLongPress}
               />
             ))}
 
