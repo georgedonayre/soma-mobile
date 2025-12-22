@@ -11,6 +11,9 @@ interface TodaysMealsProps {
 }
 
 export default function TodaysMeals({ meals, theme }: TodaysMealsProps) {
+  const [showAll, setShowAll] = React.useState(false);
+  const displayedMeals = showAll ? meals : meals.slice(0, 3);
+
   return (
     <View style={styles.container}>
       <Text style={[styles.title, { color: theme.text }]}>
@@ -18,11 +21,30 @@ export default function TodaysMeals({ meals, theme }: TodaysMealsProps) {
       </Text>
 
       {meals.length > 0 ? (
-        <View style={styles.mealsList}>
-          {meals.map((meal) => (
-            <MealCard key={meal.id} meal={meal} theme={theme} />
-          ))}
-        </View>
+        <>
+          <View style={styles.mealsList}>
+            {displayedMeals.map((meal) => (
+              <MealCard key={meal.id} meal={meal} theme={theme} />
+            ))}
+          </View>
+
+          {meals.length > 3 && (
+            <TouchableOpacity
+              style={styles.seeAllButton}
+              onPress={() => setShowAll(!showAll)}
+              activeOpacity={0.7}
+            >
+              <Text style={[styles.seeAllText, { color: theme.icon }]}>
+                {showAll ? "Show Less" : `See All ${meals.length} Meals`}
+              </Text>
+              <Ionicons
+                name={showAll ? "chevron-up" : "chevron-down"}
+                size={16}
+                color={theme.icon}
+              />
+            </TouchableOpacity>
+          )}
+        </>
       ) : (
         <View
           style={[
@@ -65,6 +87,18 @@ const styles = StyleSheet.create({
   },
   mealsList: {
     gap: 12,
+  },
+  seeAllButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 4,
+    paddingVertical: 12,
+    marginTop: 8,
+  },
+  seeAllText: {
+    fontSize: 14,
+    fontWeight: "500",
   },
   emptyState: {
     padding: 32,
