@@ -31,9 +31,8 @@ export default function Templates({
   };
 
   const handleSeeAll = () => {
-    // TODO: Navigate to templates screen or open modal
-    // router.push(routes.templatesScreen);
     console.log("See all templates");
+    router.push(routes.templatesHomeScreen);
   };
 
   const displayedTemplates = templates.slice(0, DISPLAY_LIMIT);
