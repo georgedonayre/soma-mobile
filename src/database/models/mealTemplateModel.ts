@@ -11,8 +11,8 @@ export const createMealTemplate = async (
 
   const result = await db.runAsync(
     `INSERT INTO meal_templates (
-      user_id, name, calories, protein, carbs, fat, is_favorite, use_count, last_used_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      user_id, name, calories, protein, carbs, fat, serving_size, serving_size_unit, is_favorite, use_count, last_used_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       templateData.user_id,
       templateData.name,
@@ -20,6 +20,8 @@ export const createMealTemplate = async (
       templateData.protein,
       templateData.carbs,
       templateData.fat,
+      templateData.serving_size,
+      templateData.serving_size_unit,
       templateData.is_favorite || 0,
       templateData.use_count || 0,
       templateData.last_used_at || null,
@@ -37,7 +39,6 @@ export const createMealTemplate = async (
 
   return template;
 };
-
 /**
  * Get all templates for a user
  */

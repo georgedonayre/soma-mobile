@@ -61,6 +61,8 @@ export interface MealTemplate {
   protein: number;
   carbs: number;
   fat: number;
+  serving_size: number;
+  serving_size_unit: string;
   is_favorite: number;
   use_count: number;
   last_used_at: string | null;

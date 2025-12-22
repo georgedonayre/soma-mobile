@@ -1,5 +1,7 @@
 // components/dashboard/Templates.tsx
 import { MealTemplate } from "@/src/database/types";
+import { routes } from "@/src/utils/routes";
+import { useRouter } from "expo-router";
 import React from "react";
 import {
   ScrollView,
@@ -13,14 +15,15 @@ import TemplateCard from "./template-card";
 interface TemplatesProps {
   templates: MealTemplate[];
   theme: any;
-  onCreateTemplate?: () => void;
 }
 
-export default function Templates({
-  templates,
-  theme,
-  onCreateTemplate,
-}: TemplatesProps) {
+export default function Templates({ templates, theme }: TemplatesProps) {
+  const router = useRouter();
+
+  const handleCreateTemplate = () => {
+    router.push(routes.createTemplateScreen);
+  };
+
   // Empty state
   if (templates.length === 0) {
     return (
@@ -40,7 +43,7 @@ export default function Templates({
           </Text>
           <TouchableOpacity
             style={[styles.createButton, { backgroundColor: theme.tint }]}
-            onPress={onCreateTemplate}
+            onPress={handleCreateTemplate}
             activeOpacity={0.7}
           >
             <Text style={styles.createButtonText}>Create Template</Text>

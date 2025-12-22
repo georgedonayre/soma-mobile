@@ -7,4 +7,5 @@ export const routes = {
   aiReview: "/screens/log-food/ai/review",
   barcodeScan: "/screens/log-food/barcode/scan",
   barcodeReview: "/screens/log-food/barcode/review",
+  createTemplateScreen: "/screens/templates/create-template",
 } as const;

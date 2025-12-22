@@ -112,21 +112,23 @@ export const initializeDatabase = async (): Promise<void> => {
 
     // Create meal_templates table
     await db.execAsync(`
-      CREATE TABLE IF NOT EXISTS "meal_templates" (
-        "id" INTEGER PRIMARY KEY AUTOINCREMENT,
-        "user_id" INTEGER NOT NULL,
-        "name" TEXT NOT NULL,
-        "calories" INTEGER NOT NULL CHECK (calories >= 0 AND calories <= 10000),
-        "protein" INTEGER NOT NULL CHECK (protein >= 0 AND protein <= 1000),
-        "carbs" INTEGER NOT NULL CHECK (carbs >= 0 AND carbs <= 1000),
-        "fat" INTEGER NOT NULL CHECK (fat >= 0 AND fat <= 1000),
-        "is_favorite" INTEGER DEFAULT 0,
-        "use_count" INTEGER DEFAULT 0,
-        "last_used_at" DATETIME,
-        "created_at" DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY("user_id") REFERENCES "users"("id") ON DELETE CASCADE
-      );
-    `);
+  CREATE TABLE IF NOT EXISTS "meal_templates" (
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "user_id" INTEGER NOT NULL,
+    "name" TEXT NOT NULL,
+    "calories" INTEGER NOT NULL CHECK (calories >= 0 AND calories <= 10000),
+    "protein" INTEGER NOT NULL CHECK (protein >= 0 AND protein <= 1000),
+    "carbs" INTEGER NOT NULL CHECK (carbs >= 0 AND carbs <= 1000),
+    "fat" INTEGER NOT NULL CHECK (fat >= 0 AND fat <= 1000),
+    "serving_size" REAL NOT NULL DEFAULT 100,
+    "serving_size_unit" TEXT NOT NULL DEFAULT 'g',
+    "is_favorite" INTEGER DEFAULT 0,
+    "use_count" INTEGER DEFAULT 0,
+    "last_used_at" DATETIME,
+    "created_at" DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY("user_id") REFERENCES "users"("id") ON DELETE CASCADE
+  );
+`);
 
     // Create meals table
     await db.execAsync(`
