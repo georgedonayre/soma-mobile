@@ -7,7 +7,11 @@ import { MealTemplate, MealTemplateInsert } from "../types";
 export const createMealTemplate = async (
   templateData: MealTemplateInsert
 ): Promise<MealTemplate> => {
+  console.log("Create Meal template function got called");
   const db = await openDatabase();
+  console.log("db connection okay");
+
+  console.log("done");
 
   const result = await db.runAsync(
     `INSERT INTO meal_templates (
@@ -27,6 +31,8 @@ export const createMealTemplate = async (
       templateData.last_used_at || null,
     ]
   );
+
+  console.log("Template creation good");
 
   const template = await db.getFirstAsync<MealTemplate>(
     "SELECT * FROM meal_templates WHERE id = ?",

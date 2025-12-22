@@ -21,7 +21,7 @@ export default function CreateTemplateScreen() {
   }>();
 
   const router = useRouter();
-  const { user } = useAppContext();
+  const { user, isDbReady } = useAppContext();
 
   // Parse pre-populated data (for AI-assisted creation)
   const initialName = params.name || "";
@@ -39,7 +39,7 @@ export default function CreateTemplateScreen() {
     servingSize: number;
     servingSizeUnit: string;
   }) => {
-    if (!user) return;
+    if (!user || !isDbReady) return;
 
     try {
       await createMealTemplate({
