@@ -1,20 +1,221 @@
-import { Link } from "expo-router";
-import { StyleSheet, View } from "react-native";
+import EmptyWeeklyState from "@/src/components/history/empty-weekly-state";
+import WeeklyHeader from "@/src/components/history/weekly-header";
+import WeeklyStatsCard from "@/src/components/history/weekly-stats";
+import { useAppContext } from "@/src/context/app-context";
+import { getWeeklyNutritionSummary } from "@/src/database/models/mealModel";
+import { Colors } from "@/src/theme";
+import { format, subDays } from "date-fns";
+import { Stack } from "expo-router";
+import React, { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  View,
+  useColorScheme,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+interface WeeklyAverages {
+  avgCalories: number;
+  avgProtein: number;
+  avgCarbs: number;
+  avgFat: number;
+  daysWithData: number;
+}
 
 export default function HistoryScreen() {
+  const colorScheme = useColorScheme() ?? "dark";
+  const theme = Colors[colorScheme];
+  const { user, isDbReady } = useAppContext();
+
+  const [weeklyData, setWeeklyData] = useState<WeeklyAverages | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (!isDbReady || !user) return;
+
+    const loadWeeklyData = async () => {
+      setIsLoading(true);
+      try {
+        const today = new Date();
+        const sevenDaysAgo = subDays(today, 6); // Last 7 days including today
+
+        const startDate = format(sevenDaysAgo, "yyyy-MM-dd");
+        const endDate = format(today, "yyyy-MM-dd");
+
+        const summary = await getWeeklyNutritionSummary(
+          user.id,
+          startDate,
+          endDate
+        );
+
+        // Calculate averages based on days with actual data
+        const daysWithData = summary.length;
+
+        if (daysWithData === 0) {
+          setWeeklyData({
+            avgCalories: 0,
+            avgProtein: 0,
+            avgCarbs: 0,
+            avgFat: 0,
+            daysWithData: 0,
+          });
+        } else {
+          const totals = summary.reduce(
+            (acc, day) => ({
+              calories: acc.calories + day.totalCalories,
+              protein: acc.protein + day.totalProtein,
+              carbs: acc.carbs + day.totalCarbs,
+              fat: acc.fat + day.totalFat,
+            }),
+            { calories: 0, protein: 0, carbs: 0, fat: 0 }
+          );
+
+          setWeeklyData({
+            avgCalories: Math.round(totals.calories / daysWithData),
+            avgProtein: Math.round(totals.protein / daysWithData),
+            avgCarbs: Math.round(totals.carbs / daysWithData),
+            avgFat: Math.round(totals.fat / daysWithData),
+            daysWithData,
+          });
+        }
+      } catch (error) {
+        console.error("Error loading weekly data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadWeeklyData();
+  }, [user, isDbReady]);
+
+  if (!user) {
+    return (
+      <View style={[styles.container, { backgroundColor: theme.background }]} />
+    );
+  }
+
+  const calculateProgress = (actual: number, target: number): number => {
+    if (target === 0) return 0;
+    return Math.min((actual / target) * 100, 100);
+  };
+
   return (
     <>
-      <View>
-        <Link href={"/modal"} style={styles.modalStyles}>
-          Here goes the chart
-        </Link>
-      </View>
+      <Stack.Screen
+        options={{
+          headerShown: true,
+          title: "Weekly Averages",
+          headerStyle: { backgroundColor: theme.background },
+          headerTintColor: theme.text,
+        }}
+      />
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: theme.background }]}
+        edges={["left", "right", "bottom"]}
+      >
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
+        >
+          {isLoading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={theme.tint} />
+            </View>
+          ) : weeklyData ? (
+            <>
+              <WeeklyHeader
+                daysWithData={weeklyData.daysWithData}
+                theme={theme}
+              />
+
+              {weeklyData.daysWithData === 0 ? (
+                <EmptyWeeklyState theme={theme} />
+              ) : (
+                <>
+                  {/* Primary: Calories */}
+                  <WeeklyStatsCard
+                    label="Calories"
+                    value={weeklyData.avgCalories}
+                    unit="kcal"
+                    target={user.daily_calorie_target || 2000}
+                    progress={calculateProgress(
+                      weeklyData.avgCalories,
+                      user.daily_calorie_target || 2000
+                    )}
+                    theme={theme}
+                    size="large"
+                  />
+
+                  {/* Secondary: Protein */}
+                  <WeeklyStatsCard
+                    label="Protein"
+                    value={weeklyData.avgProtein}
+                    unit="g"
+                    target={user.daily_protein_target || 150}
+                    progress={calculateProgress(
+                      weeklyData.avgProtein,
+                      user.daily_protein_target || 150
+                    )}
+                    theme={theme}
+                    size="medium"
+                  />
+
+                  {/* Tertiary: Carbs & Fats */}
+                  <View style={styles.tertiaryRow}>
+                    <WeeklyStatsCard
+                      label="Carbs"
+                      value={weeklyData.avgCarbs}
+                      unit="g"
+                      target={user.daily_carbs_target || 250}
+                      progress={calculateProgress(
+                        weeklyData.avgCarbs,
+                        user.daily_carbs_target || 250
+                      )}
+                      theme={theme}
+                      size="small"
+                    />
+
+                    <WeeklyStatsCard
+                      label="Fats"
+                      value={weeklyData.avgFat}
+                      unit="g"
+                      target={user.daily_fat_target || 65}
+                      progress={calculateProgress(
+                        weeklyData.avgFat,
+                        user.daily_fat_target || 65
+                      )}
+                      theme={theme}
+                      size="small"
+                    />
+                  </View>
+                </>
+              )}
+            </>
+          ) : null}
+        </ScrollView>
+      </SafeAreaView>
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  modalStyles: {
-    color: "white",
+  container: {
+    flex: 1,
+  },
+  scrollContent: {
+    padding: 20,
+    paddingBottom: 40,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    minHeight: 400,
+  },
+  tertiaryRow: {
+    flexDirection: "row",
+    gap: 12,
   },
 });
