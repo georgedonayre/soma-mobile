@@ -28,233 +28,154 @@ export default function WeeklyStatsCard({
 }: WeeklyStatsCardProps) {
   const progressColor = getProgressColor(progress);
 
-  const cardStyles =
-    size === "large"
-      ? styles.largeCard
-      : size === "medium"
-      ? styles.mediumCard
-      : styles.smallCard;
-
-  const valueStyles =
-    size === "large"
-      ? styles.largeValue
-      : size === "medium"
-      ? styles.mediumValue
-      : styles.smallValue;
-
-  const unitStyles =
-    size === "large"
-      ? styles.largeUnit
-      : size === "medium"
-      ? styles.mediumUnit
-      : styles.smallUnit;
-
-  const labelStyles =
-    size === "large"
-      ? styles.largeLabel
-      : size === "medium"
-      ? styles.mediumLabel
-      : styles.smallLabel;
-
-  const progressBarStyles =
-    size === "large"
-      ? styles.largeProgressBar
-      : size === "medium"
-      ? styles.mediumProgressBar
-      : styles.smallProgressBar;
-
-  const showBadge = size === "large" || size === "medium";
-
-  return (
-    <View
-      style={[
-        cardStyles,
-        {
-          backgroundColor: theme.cardBg,
-          borderColor: theme.border,
-        },
-      ]}
-    >
-      <View style={styles.cardHeader}>
-        <Text style={[labelStyles, { color: theme.icon }]}>{label}</Text>
-        {showBadge && (
-          <View
-            style={[
-              styles.badge,
-              {
-                backgroundColor: `${progressColor}15`,
-              },
-            ]}
-          >
-            <Text
-              style={[
-                styles.badgeText,
-                {
-                  color: progressColor,
-                },
-              ]}
-            >
-              {Math.round(progress)}%
-            </Text>
-          </View>
-        )}
-      </View>
-
-      <View style={styles.valueContainer}>
-        <Text style={[valueStyles, { color: theme.text }]}>
-          {size === "large" ? value.toLocaleString() : value}
-        </Text>
-        <Text style={[unitStyles, { color: theme.icon }]}>{unit}</Text>
-      </View>
-
-      <View style={styles.targetRow}>
-        <Text style={[styles.targetText, { color: theme.icon }]}>
-          {size === "small"
-            ? `of ${target}${unit}`
-            : `Target: ${target}${unit}`}
-        </Text>
-      </View>
-
-      <View style={[progressBarStyles, { backgroundColor: theme.border }]}>
+  if (size === "large") {
+    return (
+      <View style={styles.largeSection}>
+        <View style={styles.numberRow}>
+          <Text style={[styles.largeNumber, { color: theme.text }]}>
+            {value.toLocaleString()}
+          </Text>
+          <Text style={[styles.largeTarget, { color: theme.icon }]}>
+            / {target.toLocaleString()}
+          </Text>
+        </View>
+        <Text style={[styles.label, { color: theme.icon }]}>{label}</Text>
         <View
           style={[
-            styles.progressFill,
-            {
-              width: `${Math.min(progress, 100)}%`,
-              backgroundColor: progressColor,
-            },
+            styles.largeProgressBar,
+            { backgroundColor: theme.icon + "20" },
           ]}
-        />
+        >
+          <View
+            style={[
+              styles.progressFill,
+              {
+                width: `${Math.min(progress, 100)}%`,
+                backgroundColor: progressColor,
+              },
+            ]}
+          />
+        </View>
       </View>
+    );
+  }
+
+  if (size === "medium") {
+    return (
+      <View style={styles.mediumSection}>
+        <View style={styles.numberRow}>
+          <Text style={[styles.mediumNumber, { color: theme.text }]}>
+            {value}
+            {unit}
+          </Text>
+          <Text style={[styles.mediumTarget, { color: theme.icon }]}>
+            / {target}
+            {unit}
+          </Text>
+        </View>
+        <Text style={[styles.label, { color: theme.icon }]}>{label}</Text>
+        <View
+          style={[
+            styles.mediumProgressBar,
+            { backgroundColor: theme.icon + "20" },
+          ]}
+        >
+          <View
+            style={[
+              styles.progressFill,
+              {
+                width: `${Math.min(progress, 100)}%`,
+                backgroundColor: progressColor,
+              },
+            ]}
+          />
+        </View>
+      </View>
+    );
+  }
+
+  // Small (Tertiary)
+  return (
+    <View style={styles.smallItem}>
+      <Text style={[styles.smallLabel, { color: theme.icon }]}>{label}</Text>
+      <Text style={[styles.smallNumber, { color: theme.text }]}>
+        {value}
+        {unit}{" "}
+        <Text style={[styles.smallTarget, { color: theme.icon }]}>
+          / {target}
+          {unit}
+        </Text>
+      </Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  cardHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  badge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-  },
-  badgeText: {
-    fontSize: 13,
-    fontWeight: "700",
-  },
-  valueContainer: {
+  numberRow: {
     flexDirection: "row",
     alignItems: "baseline",
-    marginBottom: 12,
+    marginBottom: 8,
   },
-  targetRow: {
-    marginBottom: 16,
-  },
-  targetText: {
+  label: {
     fontSize: 14,
-    fontWeight: "500",
+    marginBottom: 12,
   },
   progressFill: {
     height: "100%",
-    borderRadius: 4,
+    borderRadius: 6,
   },
 
   // Large (Primary - Calories)
-  largeCard: {
-    borderRadius: 20,
-    padding: 24,
-    marginBottom: 16,
-    borderWidth: 1,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
+  largeSection: {
+    marginBottom: 24,
   },
-  largeLabel: {
-    fontSize: 16,
-    fontWeight: "600",
-    textTransform: "uppercase",
-    letterSpacing: 1,
-  },
-  largeValue: {
+  largeNumber: {
     fontSize: 56,
     fontWeight: "700",
-    letterSpacing: -1,
+    letterSpacing: -2,
   },
-  largeUnit: {
+  largeTarget: {
     fontSize: 20,
-    fontWeight: "500",
     marginLeft: 8,
   },
   largeProgressBar: {
-    height: 8,
-    borderRadius: 4,
+    height: 12,
+    borderRadius: 6,
     overflow: "hidden",
   },
 
   // Medium (Secondary - Protein)
-  mediumCard: {
-    borderRadius: 16,
-    padding: 20,
+  mediumSection: {
     marginBottom: 16,
-    borderWidth: 1,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 1,
   },
-  mediumLabel: {
-    fontSize: 14,
-    fontWeight: "600",
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-  },
-  mediumValue: {
-    fontSize: 40,
+  mediumNumber: {
+    fontSize: 32,
     fontWeight: "700",
+    letterSpacing: -1,
   },
-  mediumUnit: {
-    fontSize: 18,
-    fontWeight: "500",
+  mediumTarget: {
+    fontSize: 16,
     marginLeft: 6,
   },
   mediumProgressBar: {
-    height: 6,
-    borderRadius: 3,
+    height: 8,
+    borderRadius: 6,
     overflow: "hidden",
   },
 
   // Small (Tertiary - Carbs/Fats)
-  smallCard: {
+  smallItem: {
     flex: 1,
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
   },
   smallLabel: {
     fontSize: 12,
+    marginBottom: 4,
+  },
+  smallNumber: {
+    fontSize: 18,
     fontWeight: "600",
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
   },
-  smallValue: {
-    fontSize: 28,
-    fontWeight: "700",
-  },
-  smallUnit: {
+  smallTarget: {
     fontSize: 14,
-    fontWeight: "500",
-    marginLeft: 4,
-  },
-  smallProgressBar: {
-    height: 4,
-    borderRadius: 2,
-    overflow: "hidden",
   },
 });

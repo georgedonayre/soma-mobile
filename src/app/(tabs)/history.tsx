@@ -115,25 +115,32 @@ export default function HistoryScreen() {
         style={[styles.container, { backgroundColor: theme.background }]}
         edges={["left", "right", "bottom"]}
       >
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
-        >
+        <ScrollView showsVerticalScrollIndicator={false}>
           {isLoading ? (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="large" color={theme.tint} />
             </View>
           ) : weeklyData ? (
             <>
-              <WeeklyHeader
-                daysWithData={weeklyData.daysWithData}
-                theme={theme}
-              />
+              <View style={styles.headerContainer}>
+                <WeeklyHeader
+                  daysWithData={weeklyData.daysWithData}
+                  theme={theme}
+                />
+              </View>
 
               {weeklyData.daysWithData === 0 ? (
                 <EmptyWeeklyState theme={theme} />
               ) : (
-                <>
+                <View
+                  style={[
+                    styles.statsContainer,
+                    {
+                      backgroundColor: theme.background,
+                      borderBottomColor: theme.icon + "20",
+                    },
+                  ]}
+                >
                   {/* Primary: Calories */}
                   <WeeklyStatsCard
                     label="Calories"
@@ -163,7 +170,12 @@ export default function HistoryScreen() {
                   />
 
                   {/* Tertiary: Carbs & Fats */}
-                  <View style={styles.tertiaryRow}>
+                  <View
+                    style={[
+                      styles.tertiarySection,
+                      { borderTopColor: theme.icon + "15" },
+                    ]}
+                  >
                     <WeeklyStatsCard
                       label="Carbs"
                       value={weeklyData.avgCarbs}
@@ -190,7 +202,7 @@ export default function HistoryScreen() {
                       size="small"
                     />
                   </View>
-                </>
+                </View>
               )}
             </>
           ) : null}
@@ -204,18 +216,25 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  scrollContent: {
-    padding: 20,
-    paddingBottom: 40,
-  },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     minHeight: 400,
   },
-  tertiaryRow: {
+  headerContainer: {
+    paddingHorizontal: 20,
+    paddingTop: 16,
+  },
+  statsContainer: {
+    paddingHorizontal: 20,
+    paddingVertical: 24,
+    borderBottomWidth: 1,
+  },
+  tertiarySection: {
     flexDirection: "row",
     gap: 12,
+    paddingTop: 16,
+    borderTopWidth: 1,
   },
 });
