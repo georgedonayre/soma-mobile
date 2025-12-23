@@ -1,8 +1,10 @@
 import EmptyWeeklyState from "@/src/components/history/empty-weekly-state";
 import WeeklyHeader from "@/src/components/history/weekly-header";
 import WeeklyStatsCard from "@/src/components/history/weekly-stats";
+import WeightSection from "@/src/components/history/weight-section";
 import { useAppContext } from "@/src/context/app-context";
 import { getWeeklyNutritionSummary } from "@/src/database/models/mealModel";
+import { getWeightLogsByDateRange } from "@/src/database/models/weightLogModel";
 import { Colors } from "@/src/theme";
 import { format, subDays } from "date-fns";
 import { Stack } from "expo-router";
@@ -24,71 +26,92 @@ interface WeeklyAverages {
   daysWithData: number;
 }
 
+interface WeightLogData {
+  id: number;
+  date: string;
+  weight: number;
+}
+
 export default function HistoryScreen() {
   const colorScheme = useColorScheme() ?? "dark";
   const theme = Colors[colorScheme];
   const { user, isDbReady } = useAppContext();
 
   const [weeklyData, setWeeklyData] = useState<WeeklyAverages | null>(null);
+  const [weightLogs, setWeightLogs] = useState<WeightLogData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (!isDbReady || !user) return;
 
-    const loadWeeklyData = async () => {
-      setIsLoading(true);
-      try {
-        const today = new Date();
-        const sevenDaysAgo = subDays(today, 6); // Last 7 days including today
+    loadData();
+  }, [user, isDbReady]);
 
-        const startDate = format(sevenDaysAgo, "yyyy-MM-dd");
-        const endDate = format(today, "yyyy-MM-dd");
+  const loadData = async () => {
+    if (!user) return;
 
-        const summary = await getWeeklyNutritionSummary(
-          user.id,
-          startDate,
-          endDate
+    setIsLoading(true);
+    try {
+      const today = new Date();
+      const sevenDaysAgo = subDays(today, 6); // Last 7 days including today
+
+      const startDate = format(sevenDaysAgo, "yyyy-MM-dd");
+      const endDate = format(today, "yyyy-MM-dd");
+
+      // Load weekly nutrition summary
+      const summary = await getWeeklyNutritionSummary(
+        user.id,
+        startDate,
+        endDate
+      );
+
+      // Calculate averages based on days with actual data
+      const daysWithData = summary.length;
+
+      if (daysWithData === 0) {
+        setWeeklyData({
+          avgCalories: 0,
+          avgProtein: 0,
+          avgCarbs: 0,
+          avgFat: 0,
+          daysWithData: 0,
+        });
+      } else {
+        const totals = summary.reduce(
+          (acc, day) => ({
+            calories: acc.calories + day.totalCalories,
+            protein: acc.protein + day.totalProtein,
+            carbs: acc.carbs + day.totalCarbs,
+            fat: acc.fat + day.totalFat,
+          }),
+          { calories: 0, protein: 0, carbs: 0, fat: 0 }
         );
 
-        // Calculate averages based on days with actual data
-        const daysWithData = summary.length;
-
-        if (daysWithData === 0) {
-          setWeeklyData({
-            avgCalories: 0,
-            avgProtein: 0,
-            avgCarbs: 0,
-            avgFat: 0,
-            daysWithData: 0,
-          });
-        } else {
-          const totals = summary.reduce(
-            (acc, day) => ({
-              calories: acc.calories + day.totalCalories,
-              protein: acc.protein + day.totalProtein,
-              carbs: acc.carbs + day.totalCarbs,
-              fat: acc.fat + day.totalFat,
-            }),
-            { calories: 0, protein: 0, carbs: 0, fat: 0 }
-          );
-
-          setWeeklyData({
-            avgCalories: Math.round(totals.calories / daysWithData),
-            avgProtein: Math.round(totals.protein / daysWithData),
-            avgCarbs: Math.round(totals.carbs / daysWithData),
-            avgFat: Math.round(totals.fat / daysWithData),
-            daysWithData,
-          });
-        }
-      } catch (error) {
-        console.error("Error loading weekly data:", error);
-      } finally {
-        setIsLoading(false);
+        setWeeklyData({
+          avgCalories: Math.round(totals.calories / daysWithData),
+          avgProtein: Math.round(totals.protein / daysWithData),
+          avgCarbs: Math.round(totals.carbs / daysWithData),
+          avgFat: Math.round(totals.fat / daysWithData),
+          daysWithData,
+        });
       }
-    };
 
-    loadWeeklyData();
-  }, [user, isDbReady]);
+      // Load weight logs (last 14 logs for chart)
+      // We get more than 14 days to ensure we have 14 logs even if there are gaps
+      const weightStartDate = format(subDays(today, 90), "yyyy-MM-dd");
+      const logs = await getWeightLogsByDateRange(
+        user.id,
+        weightStartDate,
+        endDate
+      );
+
+      setWeightLogs(logs);
+    } catch (error) {
+      console.error("Error loading history data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   if (!user) {
     return (
@@ -204,6 +227,14 @@ export default function HistoryScreen() {
                   </View>
                 </View>
               )}
+
+              {/* Weight Section */}
+              <WeightSection
+                weightLogs={weightLogs}
+                userId={user.id}
+                theme={theme}
+                onRefresh={loadData}
+              />
             </>
           ) : null}
         </ScrollView>
