@@ -1,5 +1,5 @@
 import { Colors } from "@/src/theme";
-import { estimateMealMacros } from "@/src/utils/aiService";
+import { estimateMealMacros } from "@/src/utils/apiService";
 import { routes } from "@/src/utils/routes";
 import { Ionicons } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";

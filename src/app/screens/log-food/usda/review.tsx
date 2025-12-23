@@ -2,7 +2,7 @@ import { MealForm } from "@/src/components/log-food/meal-form";
 import { useAppContext } from "@/src/context/app-context";
 import { createMeal } from "@/src/database/models/mealModel";
 import { Colors } from "@/src/theme";
-import { FoodSearchResult } from "@/src/utils/api";
+import { FoodSearchResult } from "@/src/utils/apiService";
 import { format } from "date-fns";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";

@@ -1,4 +1,4 @@
-import { FoodSearchResult, getFoodMacros } from "@/src/utils/api";
+import { FoodSearchResult, getFoodMacros } from "@/src/utils/apiService";
 import { routes } from "@/src/utils/routes";
 import { router } from "expo-router";
 import React from "react";

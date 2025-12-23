@@ -2,7 +2,7 @@ import { AIMealReviewForm } from "@/src/components/log-food/ai-meal-review-form"
 import { useAppContext } from "@/src/context/app-context";
 import { createMeal } from "@/src/database/models/mealModel";
 import { Colors } from "@/src/theme";
-import { AIMealEstimate } from "@/src/utils/aiService";
+import { AIMealEstimate } from "@/src/utils/apiService";
 import { Ionicons } from "@expo/vector-icons";
 import { format } from "date-fns";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";

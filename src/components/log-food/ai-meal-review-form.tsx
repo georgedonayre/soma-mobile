@@ -3,7 +3,7 @@ import { MacroDisplay } from "@/src/components/log-food/macro-display";
 import { QuickSelectPresets } from "@/src/components/log-food/quick-select-presets";
 import { ServingSizeInput } from "@/src/components/log-food/serving-size-input";
 import { Colors } from "@/src/theme";
-import { AIMealItem } from "@/src/utils/aiService";
+import { AIMealItem } from "@/src/utils/apiService";
 import { Ionicons } from "@expo/vector-icons";
 import React, { ReactNode, useMemo, useState } from "react";
 import {

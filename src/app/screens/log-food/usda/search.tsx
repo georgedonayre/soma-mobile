@@ -1,7 +1,7 @@
 // app/food-search.tsx
 import FoodResultCard from "@/src/components/food-search/food-result-card";
 import { Colors } from "@/src/theme";
-import { FoodSearchResult, searchFoods } from "@/src/utils/api";
+import { FoodSearchResult, searchFoods } from "@/src/utils/apiService";
 import { Ionicons } from "@expo/vector-icons";
 import { router, Stack } from "expo-router";
 import React, { useEffect, useState } from "react";

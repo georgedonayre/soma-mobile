@@ -141,7 +141,7 @@ export default function HistoryScreen() {
       <Stack.Screen
         options={{
           headerShown: true,
-          title: "Weekly Averages",
+          title: "Analytics",
           headerStyle: { backgroundColor: theme.background },
           headerTintColor: theme.text,
         }}
