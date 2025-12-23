@@ -1,6 +1,6 @@
 export const routes = {
   dashboard: "/(tabs)/dashboard",
-  history: "/(tabs)/history",
+  history: "/(tabs)/analytics",
   usdaSearch: "/screens/log-food/usda/search",
   usdaReview: "/screens/log-food/usda/review",
   aiEntry: "/screens/log-food/ai/entry",

@@ -37,9 +37,9 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
-          name="history"
+          name="analytics"
           options={{
-            title: "History",
+            title: "Analytics",
             tabBarIcon: ({ color }) => (
               <AntDesign name="line-chart" size={24} color={color} />
             ),

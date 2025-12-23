@@ -86,6 +86,7 @@ export const searchFoods = async (
     const url = `${BACKEND_URL}/api/search-foods?query=${encodeURIComponent(
       query
     )}&pageSize=${pageSize}&pageNumber=${pageNumber}`;
+    console.log(BACKEND_URL);
 
     const response = await fetch(url);
 
