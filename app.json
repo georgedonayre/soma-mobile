@@ -23,6 +23,7 @@
       "permissions": ["android.permission.CAMERA"],
       "package": "com.georgedonayre.somamobile"
     },
+
     "web": {
       "output": "static",
       "favicon": "./assets/images/favicon.png"
