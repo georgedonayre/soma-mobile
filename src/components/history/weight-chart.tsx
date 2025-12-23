@@ -1,7 +1,7 @@
 import { format } from "date-fns";
 import React from "react";
 import { Dimensions, StyleSheet, View } from "react-native";
-import { LineChart } from "react-native-gifted-charts";
+import { LineChart } from "react-native-chart-kit";
 
 interface WeightChartProps {
   weightLogs: {
@@ -16,62 +16,82 @@ export default function WeightChart({ weightLogs, theme }: WeightChartProps) {
     return null;
   }
 
-  // Reverse to show oldest to newest (left to right)
-  const reversedLogs = [...weightLogs].reverse();
-
-  // Prepare data for the chart
-  const chartData = reversedLogs.map((log, index) => ({
-    value: log.weight,
-    label: format(new Date(log.date), "MMM d"),
-    dataPointText: `${log.weight}`,
-  }));
+  // Sort logs from oldest to newest for left-to-right display
+  const sortedLogs = [...weightLogs].sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+  );
+  console.log(weightLogs);
 
   // Calculate min and max for better scaling
-  const weights = reversedLogs.map((log) => log.weight);
+  const weights = sortedLogs.map((log) => log.weight);
   const minWeight = Math.min(...weights);
   const maxWeight = Math.max(...weights);
   const range = maxWeight - minWeight;
-  const yAxisOffset = range > 0 ? Math.max(range * 0.1, 1) : 5;
+  const padding = range > 0 ? Math.max(range * 0.15, 2) : 5;
+
+  // Prepare data for the chart
+  const labels = sortedLogs.map((log) => format(new Date(log.date), "d"));
+  const data = sortedLogs.map((log) => log.weight);
 
   const screenWidth = Dimensions.get("window").width;
-  const chartWidth = screenWidth - 40; // Account for padding
+
+  const chartConfig = {
+    backgroundColor: theme.background,
+    backgroundGradientFrom: theme.background,
+    backgroundGradientTo: theme.background,
+    decimalPlaces: 1,
+    color: (opacity = 1) =>
+      theme.tint +
+      Math.round(opacity * 255)
+        .toString(16)
+        .padStart(2, "0"),
+    labelColor: (opacity = 1) =>
+      theme.icon +
+      Math.round(opacity * 255)
+        .toString(16)
+        .padStart(2, "0"),
+    style: {
+      borderRadius: 16,
+    },
+    propsForDots: {
+      r: "5",
+      strokeWidth: "2",
+      stroke: theme.tint,
+    },
+    propsForBackgroundLines: {
+      strokeDasharray: "", // solid lines
+      stroke: theme.icon + "20",
+    },
+  };
 
   return (
     <View style={styles.container}>
       <LineChart
-        data={chartData}
-        width={chartWidth}
-        height={200}
-        spacing={Math.max(chartWidth / Math.max(chartData.length - 1, 1), 40)}
-        color={theme.tint}
-        thickness={3}
-        startFillColor={theme.tint}
-        endFillColor={theme.tint}
-        startOpacity={0.2}
-        endOpacity={0.01}
-        initialSpacing={10}
-        endSpacing={10}
-        noOfSections={4}
-        yAxisColor={theme.icon + "30"}
-        xAxisColor={theme.icon + "30"}
-        yAxisTextStyle={[styles.yAxisText, { color: theme.icon }]}
-        xAxisLabelTextStyle={[styles.xAxisText, { color: theme.icon }]}
-        dataPointsColor={theme.tint}
-        dataPointsRadius={5}
-        textShiftY={-8}
-        textShiftX={-5}
-        textFontSize={11}
-        textColor={theme.text}
-        showVerticalLines={false}
-        curved
-        animateOnDataChange
-        areaChart
-        hideDataPoints={chartData.length > 10}
-        yAxisOffset={yAxisOffset}
-        maxValue={maxWeight + yAxisOffset}
-        yAxisLabelSuffix=" kg"
-        rulesColor={theme.icon + "20"}
-        rulesType="solid"
+        data={{
+          labels: labels,
+          datasets: [
+            {
+              data: data,
+            },
+          ],
+        }}
+        width={screenWidth - 40}
+        height={220}
+        chartConfig={chartConfig}
+        bezier
+        style={styles.chart}
+        fromZero={false}
+        segments={4}
+        yAxisSuffix=" kg"
+        yAxisInterval={1}
+        withInnerLines={true}
+        withOuterLines={false}
+        withVerticalLines={false}
+        withHorizontalLines={true}
+        withDots={data.length <= 10}
+        withShadow={false}
+        yAxisLabel=""
+        formatYLabel={(value) => `${parseFloat(value).toFixed(1)}`}
       />
     </View>
   );
@@ -81,12 +101,10 @@ const styles = StyleSheet.create({
   container: {
     marginTop: 16,
     marginBottom: 8,
+    paddingRight: 10,
   },
-  yAxisText: {
-    fontSize: 10,
-  },
-  xAxisText: {
-    fontSize: 10,
-    width: 50,
+  chart: {
+    marginVertical: 8,
+    borderRadius: 16,
   },
 });

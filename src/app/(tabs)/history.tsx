@@ -105,7 +105,19 @@ export default function HistoryScreen() {
         endDate
       );
 
-      setWeightLogs(logs);
+      // Populate weight logs for the last 7 days, linear increase from 70 to 73
+      const dummyLogs: WeightLogData[] = Array.from({ length: 7 }).map(
+        (_, idx) => {
+          const date = subDays(today, 6 - idx); // oldest first
+          return {
+            id: idx + 1,
+            date: format(date, "yyyy-MM-dd"),
+            weight: 70 + ((73 - 70) / 6) * idx, // linear from 70 to 73 over 7 days
+          };
+        }
+      );
+
+      setWeightLogs(dummyLogs);
     } catch (error) {
       console.error("Error loading history data:", error);
     } finally {
