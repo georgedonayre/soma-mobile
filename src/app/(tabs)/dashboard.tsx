@@ -95,7 +95,7 @@ export default function Dashboard() {
             theme={theme}
           />
 
-          <QuickActions theme={theme} />
+          <QuickActions theme={theme} user={user} />
 
           <TodaysMeals meals={todaysMeals} theme={theme} />
 

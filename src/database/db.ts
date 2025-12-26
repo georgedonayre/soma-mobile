@@ -106,7 +106,6 @@ export const initializeDatabase = async (): Promise<void> => {
         "created_at" DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY("user_id") REFERENCES "users"("id") ON DELETE CASCADE,
         UNIQUE(user_id, date),
-        CHECK (date <= CURRENT_DATE)
       );
     `);
 
@@ -145,7 +144,6 @@ export const initializeDatabase = async (): Promise<void> => {
         "created_at" DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY("user_id") REFERENCES "users"("id") ON DELETE CASCADE,
         FOREIGN KEY("template_id") REFERENCES "meal_templates"("id") ON DELETE SET NULL,
-        CHECK (date <= CURRENT_DATE)
       );
     `);
 
