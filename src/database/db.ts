@@ -105,7 +105,7 @@ export const initializeDatabase = async (): Promise<void> => {
         "notes" TEXT,
         "created_at" DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY("user_id") REFERENCES "users"("id") ON DELETE CASCADE,
-        UNIQUE(user_id, date),
+        UNIQUE(user_id, date)
       );
     `);
 
@@ -143,7 +143,7 @@ export const initializeDatabase = async (): Promise<void> => {
         "template_id" INTEGER,
         "created_at" DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY("user_id") REFERENCES "users"("id") ON DELETE CASCADE,
-        FOREIGN KEY("template_id") REFERENCES "meal_templates"("id") ON DELETE SET NULL,
+        FOREIGN KEY("template_id") REFERENCES "meal_templates"("id") ON DELETE SET NULL
       );
     `);
 
@@ -205,6 +205,7 @@ export const dropAllTables = async (): Promise<void> => {
       DROP TABLE IF EXISTS body_goals;
       DROP TABLE IF EXISTS users;
       DROP TABLE IF EXISTS app_settings;
+      DROP TABLE IF EXISTS barcode_foods;
     `);
 
     console.log("✅ All tables dropped");

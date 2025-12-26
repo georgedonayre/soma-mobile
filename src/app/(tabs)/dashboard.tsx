@@ -1,7 +1,14 @@
 import { Meal, MealTemplate } from "@/src/database/types";
 import { Colors } from "@/src/theme";
 import React, { useEffect, useState } from "react";
-import { ScrollView, StyleSheet, View, useColorScheme } from "react-native";
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+  useColorScheme,
+} from "react-native";
 
 import ContextHeader from "@/src/components/dashboard/context-header";
 
@@ -44,9 +51,22 @@ export default function Dashboard() {
     loadData();
   }, [user, isDbReady]);
 
+  // ⭐ Show loading while DB initializes
+  if (!isDbReady) {
+    return (
+      <View style={[styles.container]}>
+        <ActivityIndicator size="large" />
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
+
+  // ⭐ Show message if no user (shouldn't happen after onboarding)
   if (!user) {
     return (
-      <View style={[styles.container, { backgroundColor: theme.background }]} />
+      <View style={[styles.container]}>
+        <Text>No user found. Please complete onboarding.</Text>
+      </View>
     );
   }
 
@@ -95,7 +115,7 @@ export default function Dashboard() {
             theme={theme}
           />
 
-          <QuickActions theme={theme} user={user} />
+          <QuickActions theme={theme} />
 
           <TodaysMeals meals={todaysMeals} theme={theme} />
 

@@ -1,3 +1,4 @@
+import { dropAllTables } from "@/src/database/db";
 import { routes } from "@/src/utils/routes";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -53,6 +54,9 @@ export default function QuickActions({ theme }: QuickActionsProps) {
             { backgroundColor: theme.icon + "15" },
           ]}
           activeOpacity={0.7}
+          onPress={async () => {
+            await dropAllTables();
+          }}
         >
           <Ionicons name="time" size={24} color={theme.text} />
           <Text style={[styles.secondaryActionText, { color: theme.text }]}>

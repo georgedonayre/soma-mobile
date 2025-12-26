@@ -21,6 +21,7 @@ import {
   View,
 } from "react-native";
 import { ThemedView } from "../components/themed-view";
+import { useAppContext } from "../context/app-context";
 import { Colors } from "../theme";
 import { calculateTargets } from "../utils/onboarding";
 import { routes } from "../utils/routes";
@@ -29,6 +30,7 @@ export default function Onboarding() {
   const colorScheme = useColorScheme() ?? "dark";
   const theme = Colors[colorScheme];
   const [currentStep, setCurrentStep] = useState(1);
+  const { refreshUser } = useAppContext();
 
   const router = useRouter();
   const {
@@ -87,6 +89,8 @@ export default function Onboarding() {
         earned_badges: null,
         exp: 0,
       });
+
+      await refreshUser();
 
       router.replace(routes.dashboard);
     } catch (error) {
