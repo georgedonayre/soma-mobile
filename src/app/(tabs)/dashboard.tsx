@@ -12,6 +12,7 @@ import {
 
 import ContextHeader from "@/src/components/dashboard/context-header";
 
+import CollapsibleQuote from "@/src/components/dashboard/collapsible-quote";
 import MacroSummary from "@/src/components/dashboard/macro-summary";
 import ProgressIndicator from "@/src/components/dashboard/progress-indicator";
 import QuickActions from "@/src/components/dashboard/quick-actions";
@@ -96,7 +97,7 @@ export default function Dashboard() {
       >
         <ScrollView showsVerticalScrollIndicator={false}>
           <ContextHeader date={new Date()} streak={user.streak} theme={theme} />
-
+          <CollapsibleQuote theme={theme} />
           <MacroSummary
             dailyTotals={dailyTotals}
             targets={{
