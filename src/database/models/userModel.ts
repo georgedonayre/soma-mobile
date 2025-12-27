@@ -1,6 +1,8 @@
 import { openDatabase } from "../db";
 import { User, UserInsert } from "../types";
 
+import { formatISO, isToday, isYesterday, parseISO } from "date-fns";
+
 export const createUser = async (userData: UserInsert): Promise<User> => {
   const db = await openDatabase();
 
@@ -106,4 +108,130 @@ export const isOnboarded = async (): Promise<boolean> => {
  */
 export const setOnboarded = async (userId: number): Promise<void> => {
   await updateUser(userId, { onboarded: 1 });
+};
+
+/**
+ * Update streak when user logs a meal
+ * Call this once per meal log
+ */
+export const updateStreak = async (
+  userId: number
+): Promise<{
+  streak: number;
+  longestStreak: number;
+  streakIncremented: boolean;
+}> => {
+  const user = await getCurrentUser();
+
+  console.log("Fetched user:", user);
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  const now = new Date();
+  let newStreak = user.streak || 0;
+  let newLongestStreak = user.longest_streak || 0;
+  let streakIncremented = false;
+
+  console.log(
+    "Current streak:",
+    newStreak,
+    "Longest streak:",
+    newLongestStreak,
+    "Last logged at:",
+    user.last_logged_at
+  );
+
+  // First time logging a meal
+  if (!user.last_logged_at) {
+    console.log("No last_logged_at found — first time logging a meal");
+    newStreak = 1;
+    newLongestStreak = 1;
+    streakIncremented = true;
+  } else {
+    const lastLogged = parseISO(user.last_logged_at);
+    console.log("Parsed last_logged_at:", lastLogged);
+
+    // Already logged today - don't increment
+    if (isToday(lastLogged)) {
+      console.log("Already logged today — streak will not increment");
+      streakIncremented = false;
+    }
+    // Logged yesterday - increment streak
+    else if (isYesterday(lastLogged)) {
+      newStreak = (user.streak || 0) + 1;
+      newLongestStreak = Math.max(newStreak, user.longest_streak || 0);
+      streakIncremented = true;
+      console.log("Logged yesterday — incrementing streak to:", newStreak);
+    }
+    // Missed a day - reset streak to 1
+    else {
+      newStreak = 1;
+      streakIncremented = true;
+      console.log("Missed a day — resetting streak to 1");
+    }
+  }
+
+  // Save to database
+  console.log("Updating user in DB with:", {
+    streak: newStreak,
+    longest_streak: newLongestStreak,
+    last_logged_at: formatISO(now),
+  });
+
+  await updateUser(userId, {
+    streak: newStreak,
+    longest_streak: newLongestStreak,
+    last_logged_at: formatISO(now),
+  });
+
+  console.log("Streak update complete. Result:", {
+    streak: newStreak,
+    longestStreak: newLongestStreak,
+    streakIncremented,
+  });
+
+  return {
+    streak: newStreak,
+    longestStreak: newLongestStreak,
+    streakIncremented,
+  };
+};
+
+/**
+ * Get current streak information
+ */
+export const getStreakInfo = async (): Promise<{
+  currentStreak: number;
+  longestStreak: number;
+  lastLoggedAt: string | null;
+  streakActive: boolean;
+}> => {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    return {
+      currentStreak: 0,
+      longestStreak: 0,
+      lastLoggedAt: null,
+      streakActive: false,
+    };
+  }
+
+  let streakActive = false;
+
+  // Check if streak is still active
+  if (user.last_logged_at) {
+    const lastLogged = parseISO(user.last_logged_at);
+    // Streak is active if logged today or yesterday
+    streakActive = isToday(lastLogged) || isYesterday(lastLogged);
+  }
+
+  return {
+    currentStreak: user.streak || 0,
+    longestStreak: user.longest_streak || 0,
+    lastLoggedAt: user.last_logged_at,
+    streakActive,
+  };
 };

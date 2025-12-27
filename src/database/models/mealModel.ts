@@ -1,6 +1,7 @@
 // src/database/models/mealModel.ts
 import { openDatabase } from "../db";
 import { Meal, MealInsert } from "../types";
+import { updateStreak } from "./userModel";
 
 /**
  * Create a new meal entry
@@ -47,6 +48,13 @@ export const createMeal = async (mealData: MealInsert): Promise<Meal> => {
     if (!meal) {
       throw new Error("Failed to create meal");
     }
+
+    console.log("✅ createMeal: Complete!");
+
+    // Update streak after successful meal creation
+    console.log("🔵 createMeal: Updating streak...");
+    const streakUpdate = await updateStreak(mealData.user_id);
+    console.log("🔵 createMeal: Streak updated:", streakUpdate);
 
     console.log("✅ createMeal: Complete!");
     return meal;

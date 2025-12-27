@@ -2,6 +2,7 @@ import * as SQLite from "expo-sqlite";
 
 // Database name - this will be stored in the device's filesystem
 const DATABASE_NAME = "fitness_app.db";
+// Create one instance of the database (Single source of truth)
 let dbInstance: SQLite.SQLiteDatabase | null = null;
 
 /**
@@ -59,7 +60,10 @@ export const initializeDatabase = async (): Promise<void> => {
       );
     `);
 
+    console.log("✅ users table created");
+
     // Create body_goals table
+    // NOTE: Currently this table is not being used.
     await db.execAsync(`
       CREATE TABLE IF NOT EXISTS "body_goals" (
         "id" INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -77,21 +81,22 @@ export const initializeDatabase = async (): Promise<void> => {
         CHECK (started_at <= CURRENT_DATE)
       );
     `);
+    console.log("✅ body_goals table created");
 
     // Create barcode_foods table
     await db.execAsync(`
-  CREATE TABLE IF NOT EXISTS "barcode_foods" (
-    "barcode" TEXT PRIMARY KEY,
-    "product_name" TEXT NOT NULL,
-    "serving_size" REAL NOT NULL CHECK (serving_size > 0),
-    "serving_unit" TEXT NOT NULL,
-    "calories" REAL NOT NULL CHECK (calories >= 0),
-    "protein" REAL NOT NULL CHECK (protein >= 0),
-    "carbs" REAL NOT NULL CHECK (carbs >= 0),
-    "fat" REAL NOT NULL CHECK (fat >= 0),
-    "created_at" TEXT DEFAULT CURRENT_TIMESTAMP
-  );
-`);
+      CREATE TABLE IF NOT EXISTS "barcode_foods" (
+        "barcode" TEXT PRIMARY KEY,
+        "product_name" TEXT NOT NULL,
+        "serving_size" REAL NOT NULL CHECK (serving_size > 0),
+        "serving_unit" TEXT NOT NULL,
+        "calories" REAL NOT NULL CHECK (calories >= 0),
+        "protein" REAL NOT NULL CHECK (protein >= 0),
+        "carbs" REAL NOT NULL CHECK (carbs >= 0),
+        "fat" REAL NOT NULL CHECK (fat >= 0),
+        "created_at" TEXT DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
 
     console.log("✅ barcode_foods table created");
 
@@ -108,6 +113,7 @@ export const initializeDatabase = async (): Promise<void> => {
         UNIQUE(user_id, date)
       );
     `);
+    console.log("✅ weight_logs table created");
 
     // Create meal_templates table
     await db.execAsync(`
@@ -130,6 +136,8 @@ export const initializeDatabase = async (): Promise<void> => {
     );
   `);
 
+    console.log("✅ meal_templates table created");
+
     // Create meals table
     await db.execAsync(`
       CREATE TABLE IF NOT EXISTS "meals" (
@@ -148,7 +156,10 @@ export const initializeDatabase = async (): Promise<void> => {
       );
     `);
 
+    console.log("✅ meals table created");
+
     // Create indexes
+    // What's database indexing? You ask. Basically it helps sort our data and it searches that data, not the whole data.
     await db.execAsync(`
       CREATE INDEX IF NOT EXISTS idx_body_goals_user_active ON body_goals(user_id, is_active);
       CREATE INDEX IF NOT EXISTS idx_weight_logs_user_date ON weight_logs(user_id, date DESC);
@@ -169,17 +180,6 @@ export const initializeDatabase = async (): Promise<void> => {
           use_count = use_count + 1,
           last_used_at = CURRENT_TIMESTAMP
         WHERE id = NEW.template_id;
-      END;
-    `);
-
-    await db.execAsync(`
-      CREATE TRIGGER IF NOT EXISTS update_last_logged
-      AFTER INSERT ON meals
-      BEGIN
-        UPDATE users 
-        SET last_logged_at = NEW.date
-        WHERE id = NEW.user_id 
-          AND (last_logged_at IS NULL OR last_logged_at < NEW.date);
       END;
     `);
 
