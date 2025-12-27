@@ -15,6 +15,7 @@ import {
 import Toast from "react-native-toast-message";
 
 interface TemplateCardProps {
+  key: number;
   template: MealTemplate;
   theme: any;
   onLongPress: () => void;

@@ -16,9 +16,30 @@ export default function TodaysMeals({ meals, theme }: TodaysMealsProps) {
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.title, { color: theme.text }]}>
-        Today&apos;s Meals
-      </Text>
+      <View style={styles.header}>
+        <View style={styles.headerLeft}>
+          <View
+            style={[
+              styles.iconContainer,
+              { backgroundColor: theme.tint + "20" },
+            ]}
+          >
+            <Ionicons name="restaurant" size={20} color={theme.tint} />
+          </View>
+          <View>
+            <Text style={[styles.title, { color: theme.text }]}>
+              Today&apos;s Meals
+            </Text>
+            <Text style={[styles.subtitle, { color: theme.icon }]}>
+              {new Date().toLocaleDateString("en-US", {
+                weekday: "long",
+                month: "short",
+                day: "numeric",
+              })}
+            </Text>
+          </View>
+        </View>
+      </View>
 
       {meals.length > 0 ? (
         <>
@@ -46,29 +67,22 @@ export default function TodaysMeals({ meals, theme }: TodaysMealsProps) {
           )}
         </>
       ) : (
-        <View
-          style={[
-            styles.emptyState,
-            {
-              backgroundColor: theme.background,
-              borderColor: theme.icon + "20",
-            },
-          ]}
-        >
+        <View>
           <View
             style={[
-              styles.emptyIconCircle,
-              { backgroundColor: theme.icon + "15" },
+              styles.emptyCard,
+              { backgroundColor: theme.cardBg, borderColor: theme.border },
             ]}
           >
-            <Ionicons name="add" size={32} color={theme.icon} />
+            <Text style={styles.emptyIcon}>🐲</Text>
+            <Text style={[styles.emptyTitle, { color: theme.text }]}>
+              No meals logged yet today
+            </Text>
+            <Text style={[styles.emptyDescription, { color: theme.icon }]}>
+              Start tracking your nutrition by logging your first meal of the
+              day
+            </Text>
           </View>
-          <Text style={[styles.emptyText, { color: theme.text }]}>
-            No meals logged yet today
-          </Text>
-          <TouchableOpacity style={styles.emptyButton} activeOpacity={0.7}>
-            <Text style={styles.emptyButtonText}>Log Your First Meal</Text>
-          </TouchableOpacity>
         </View>
       )}
     </View>
@@ -80,10 +94,55 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 20,
   },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  headerLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    flex: 1,
+  },
+  iconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   title: {
+    fontSize: 17,
+    fontWeight: "600",
+    marginBottom: 2,
+  },
+  subtitle: {
+    fontSize: 13,
+    opacity: 0.7,
+  },
+  emptyCard: {
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 32,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  emptyIcon: {
+    fontSize: 48,
+    marginBottom: 16,
+  },
+  emptyTitle: {
     fontSize: 18,
     fontWeight: "600",
-    marginBottom: 16,
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  emptyDescription: {
+    fontSize: 14,
+    lineHeight: 20,
+    textAlign: "center",
+    maxWidth: 280,
   },
   mealsList: {
     gap: 12,

@@ -1,4 +1,4 @@
-import { DISPLAY_LIMIT } from "@/src/config/constants";
+import { TEMPLATES_DISPLAY_LIMIT } from "@/src/config/constants";
 import { MealTemplate } from "@/src/database/types";
 import { routes } from "@/src/utils/routes";
 import { Ionicons } from "@expo/vector-icons";
@@ -35,8 +35,8 @@ export default function Templates({
     router.push(routes.templatesHomeScreen);
   };
 
-  const displayedTemplates = templates.slice(0, DISPLAY_LIMIT);
-  const hasMore = templates.length > DISPLAY_LIMIT;
+  const displayedTemplates = templates.slice(0, TEMPLATES_DISPLAY_LIMIT);
+  const hasMore = templates.length > TEMPLATES_DISPLAY_LIMIT;
 
   return (
     <View style={styles.container}>
@@ -129,7 +129,7 @@ export default function Templates({
                   See All
                 </Text>
                 <Text style={[styles.seeAllCount, { color: theme.icon }]}>
-                  +{templates.length - DISPLAY_LIMIT} more
+                  +{templates.length - TEMPLATES_DISPLAY_LIMIT} more
                 </Text>
                 <Ionicons
                   name="chevron-forward"
