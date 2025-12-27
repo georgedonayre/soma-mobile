@@ -187,7 +187,7 @@ export function NewTemplateForm({
                 No items added yet
               </Text>
               <Text style={[styles.emptySubtext, { color: theme.icon }]}>
-                Tap &qout;Add Item&qout; to start building your template
+                Tap &quot;Add Item&quot; to start building your template
               </Text>
             </View>
           ) : (

@@ -10,6 +10,7 @@ interface TemplateItemCardProps {
   onEdit: () => void;
   onDelete: () => void;
   theme: any;
+  key: number;
 }
 
 export function TemplateItemCard({
