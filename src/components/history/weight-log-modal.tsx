@@ -63,7 +63,7 @@ export default function WeightLogModal({
         type: "error",
         text1: "Weight required",
         text2: "Please enter your weight",
-        position: "bottom",
+        position: "top",
         visibilityTime: 2000,
       });
       return;
@@ -74,7 +74,7 @@ export default function WeightLogModal({
         type: "error",
         text1: "Invalid weight",
         text2: "Weight must be between 20-300 kg",
-        position: "bottom",
+        position: "top",
         visibilityTime: 2000,
       });
       return;
@@ -94,7 +94,7 @@ export default function WeightLogModal({
         type: "success",
         text1: "Weight logged! 🎉",
         text2: `${weight} kg recorded for ${format(date, "MMM d")}`,
-        position: "bottom",
+        position: "top",
         visibilityTime: 2000,
       });
 
@@ -108,7 +108,7 @@ export default function WeightLogModal({
           type: "error",
           text1: "Already logged",
           text2: `Weight already exists for ${format(date, "MMM d, yyyy")}`,
-          position: "bottom",
+          position: "top",
           visibilityTime: 3000,
         });
       } else {
@@ -116,7 +116,7 @@ export default function WeightLogModal({
           type: "error",
           text1: "Failed to log weight",
           text2: "Please try again",
-          position: "bottom",
+          position: "top",
           visibilityTime: 2000,
         });
       }

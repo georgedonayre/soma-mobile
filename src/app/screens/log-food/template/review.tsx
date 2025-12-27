@@ -8,6 +8,7 @@ import { format } from "date-fns";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
 import { Alert, StyleSheet, Text, useColorScheme, View } from "react-native";
+import Toast from "react-native-toast-message";
 
 type Macros = {
   calories: number;
@@ -78,7 +79,13 @@ export default function TemplateReviewScreen() {
         template_id: template.id,
       });
 
-      Alert.alert("Success", "Meal logged successfully!");
+      Toast.show({
+        type: "success",
+        text1: "Meal logged 🍽️",
+        text2: "Go, keep grinding 💪",
+        position: "top",
+        visibilityTime: 2000,
+      });
       router.push("/dashboard");
     } catch (err) {
       console.error("Failed to log meal from template:", err);

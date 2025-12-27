@@ -6,7 +6,6 @@ import { Stack, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -18,6 +17,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
 
 export default function AILogFoodScreen() {
   const router = useRouter();
@@ -29,7 +29,13 @@ export default function AILogFoodScreen() {
 
   const handleAnalyze = async () => {
     if (!mealDescription.trim()) {
-      Alert.alert("Input Required", "Please describe your meal");
+      Toast.show({
+        type: "error",
+        text1: "Input Required",
+        text2: "Please describe your meal.",
+        position: "top",
+        visibilityTime: 2000,
+      });
       return;
     }
 
@@ -48,10 +54,14 @@ export default function AILogFoodScreen() {
       });
     } catch (error) {
       console.error("Error analyzing meal:", error);
-      Alert.alert(
-        "Analysis Failed",
-        "Unable to analyze your meal. Please try again or use manual entry."
-      );
+      Toast.show({
+        type: "error",
+        text1: "Analysis Failed",
+        text2:
+          "Unable to analyze your meal. Please try again or use manual entry.",
+        position: "top",
+        visibilityTime: 2000,
+      });
     } finally {
       setIsLoading(false);
     }

@@ -9,6 +9,7 @@ import { calculateTemplateMacros } from "@/src/utils/templateUtils";
 import { Stack, useRouter } from "expo-router";
 import React, { useState } from "react";
 import { Alert, useColorScheme } from "react-native";
+import Toast from "react-native-toast-message";
 
 export default function CreateTemplateScreen() {
   const router = useRouter();
@@ -51,7 +52,13 @@ export default function CreateTemplateScreen() {
         last_used_at: null,
       });
 
-      Alert.alert("Success", "Template created successfully!");
+      Toast.show({
+        type: "success",
+        text1: "Success",
+        text2: "Template created successfully 💪",
+        position: "top",
+        visibilityTime: 2000,
+      });
       router.push("/dashboard");
     } catch (err) {
       console.error("Failed to create template:", err);

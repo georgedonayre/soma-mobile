@@ -1,5 +1,3 @@
-// Define TypeScript interfaces matching your database tables
-
 export interface User {
   id: number;
   name: string;

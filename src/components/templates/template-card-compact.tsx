@@ -60,7 +60,7 @@ export default function TemplateCardCompact({
         type: "success",
         text1: "Meal logged! 🎉",
         text2: `${template.name} added to today`,
-        position: "bottom",
+        position: "top",
         visibilityTime: 2000,
       });
     } catch (err) {
@@ -71,7 +71,7 @@ export default function TemplateCardCompact({
         type: "error",
         text1: "Failed to log meal",
         text2: "Please try again",
-        position: "bottom",
+        position: "top",
         visibilityTime: 2000,
       });
     }

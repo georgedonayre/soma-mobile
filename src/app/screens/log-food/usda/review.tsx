@@ -7,6 +7,7 @@ import { format } from "date-fns";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import { StyleSheet, Text, useColorScheme, View } from "react-native";
+import Toast from "react-native-toast-message";
 
 type Macros = {
   calories: number;
@@ -63,6 +64,13 @@ export default function LogFoodScreen() {
         fat: adjustedMacros.fat,
         date: format(new Date(), "yyyy-MM-dd"),
         template_id: null,
+      });
+      Toast.show({
+        type: "success",
+        text1: "Meal logged 🍽️",
+        text2: "Go, keep grinding 💪",
+        position: "top",
+        visibilityTime: 2000,
       });
 
       router.push("/dashboard");

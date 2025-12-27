@@ -59,9 +59,9 @@ export default function TemplateCard({
       // Show success toast
       Toast.show({
         type: "success",
-        text1: "Meal logged! 🎉",
-        text2: `${template.name} added to today`,
-        position: "bottom",
+        text1: "Meal logged 🍽️",
+        text2: "Go, keep grinding 💪",
+        position: "top",
         visibilityTime: 2000,
       });
       if (onLongPress) onLongPress();
@@ -73,7 +73,7 @@ export default function TemplateCard({
         type: "error",
         text1: "Failed to log meal",
         text2: "Please try again",
-        position: "bottom",
+        position: "top",
         visibilityTime: 2000,
       });
     }
