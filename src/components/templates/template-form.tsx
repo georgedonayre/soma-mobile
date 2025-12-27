@@ -1,205 +1,110 @@
-// components/template/template-form.tsx
-import { Colors } from "@/src/theme";
+// components/templates/new-template-form.tsx
+
+import { TemplateItem } from "@/src/database/types";
+import { calculateTemplateMacros } from "@/src/utils/templateUtils";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
-  KeyboardAvoidingView,
-  Platform,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  useColorScheme,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { AddItemModal } from "./add-item-modal";
+import { TemplateItemCard } from "./template-item-card";
 
-type Macros = {
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
-};
-
-interface TemplateFormProps {
-  // Header
+interface NewTemplateFormProps {
   title: string;
   onBack: () => void;
-
-  // Pre-populated data (for AI-assisted creation)
-  initialName?: string;
-  initialMacros?: Macros;
-  initialServingSize?: number;
-  initialServingSizeUnit?: string;
-
-  // Actions
   onConfirm: (data: {
     name: string;
-    macros: Macros;
+    items: TemplateItem[];
     servingSize: number;
     servingSizeUnit: string;
   }) => void;
   confirmButtonText?: string;
   isLoading?: boolean;
+  theme: any;
 }
 
-export function TemplateForm({
+export function NewTemplateForm({
   title,
   onBack,
-  initialName = "",
-  initialMacros = { calories: 0, protein: 0, carbs: 0, fat: 0 },
-  initialServingSize = 100,
-  initialServingSizeUnit = "g",
   onConfirm,
   confirmButtonText = "Create Template",
   isLoading = false,
-}: TemplateFormProps) {
-  const colorScheme = useColorScheme() ?? "dark";
-  const theme = Colors[colorScheme];
+  theme,
+}: NewTemplateFormProps) {
+  const [templateName, setTemplateName] = useState("");
+  const [items, setItems] = useState<TemplateItem[]>([]);
+  const [servingSize, setServingSize] = useState("1");
+  const [servingSizeUnit, setServingSizeUnit] = useState("serving");
 
-  // Form state - use empty strings for zero values to avoid having to delete '0'
-  const [name, setName] = useState(initialName);
-  const [calories, setCalories] = useState(
-    initialMacros.calories > 0 ? initialMacros.calories.toString() : ""
-  );
-  const [protein, setProtein] = useState(
-    initialMacros.protein > 0 ? initialMacros.protein.toString() : ""
-  );
-  const [carbs, setCarbs] = useState(
-    initialMacros.carbs > 0 ? initialMacros.carbs.toString() : ""
-  );
-  const [fat, setFat] = useState(
-    initialMacros.fat > 0 ? initialMacros.fat.toString() : ""
-  );
-  const [servingSize, setServingSize] = useState(
-    initialServingSize > 0 ? initialServingSize.toString() : ""
-  );
-  const [servingSizeUnit] = useState(initialServingSizeUnit);
+  const [showAddItemModal, setShowAddItemModal] = useState(false);
+  const [editingItemIndex, setEditingItemIndex] = useState<number | null>(null);
 
-  // Validation errors
   const [nameError, setNameError] = useState("");
-  const [caloriesError, setCaloriesError] = useState("");
-  const [proteinError, setProteinError] = useState("");
-  const [carbsError, setCarbsError] = useState("");
-  const [fatError, setFatError] = useState("");
-  const [servingSizeError, setServingSizeError] = useState("");
+  const [itemsError, setItemsError] = useState("");
 
-  const validateNumber = (
-    value: string,
-    min: number,
-    max: number
-  ): number | null => {
-    // Treat empty string as 0
-    if (value.trim() === "") {
-      return 0;
+  // Calculate total macros from items
+  const totalMacros = calculateTemplateMacros(items);
+
+  const handleAddItem = (item: TemplateItem) => {
+    if (editingItemIndex !== null) {
+      // Edit existing item
+      const updatedItems = [...items];
+      updatedItems[editingItemIndex] = item;
+      setItems(updatedItems);
+      setEditingItemIndex(null);
+    } else {
+      // Add new item
+      setItems([...items, item]);
     }
-    const num = parseFloat(value);
-    if (isNaN(num) || num < min || num > max) {
-      return null;
-    }
-    return num;
+    setItemsError("");
   };
 
-  const handleConfirmPress = () => {
-    // Reset errors
+  const handleEditItem = (index: number) => {
+    setEditingItemIndex(index);
+    setShowAddItemModal(true);
+  };
+
+  const handleDeleteItem = (index: number) => {
+    setItems(items.filter((_, i) => i !== index));
+  };
+
+  const handleConfirm = () => {
     setNameError("");
-    setCaloriesError("");
-    setProteinError("");
-    setCarbsError("");
-    setFatError("");
-    setServingSizeError("");
+    setItemsError("");
 
     let hasError = false;
 
-    // Validate name
-    if (!name.trim()) {
+    if (!templateName.trim()) {
       setNameError("Template name is required");
       hasError = true;
     }
 
-    // Validate macros
-    const validCalories = validateNumber(calories, 0, 10000);
-    if (validCalories === null) {
-      setCaloriesError("Enter calories between 0-10000");
+    if (items.length === 0) {
+      setItemsError("Add at least one item to your template");
       hasError = true;
     }
 
-    const validProtein = validateNumber(protein, 0, 1000);
-    if (validProtein === null) {
-      setProteinError("Enter protein between 0-1000g");
-      hasError = true;
-    }
-
-    const validCarbs = validateNumber(carbs, 0, 1000);
-    if (validCarbs === null) {
-      setCarbsError("Enter carbs between 0-1000g");
-      hasError = true;
-    }
-
-    const validFat = validateNumber(fat, 0, 1000);
-    if (validFat === null) {
-      setFatError("Enter fat between 0-1000g");
-      hasError = true;
-    }
-
-    const validServingSize = validateNumber(servingSize, 0.1, 10000);
-    if (validServingSize === null || validServingSize === 0) {
-      setServingSizeError("Enter valid serving size (min 0.1)");
+    const validServingSize = parseFloat(servingSize);
+    if (isNaN(validServingSize) || validServingSize <= 0) {
       hasError = true;
     }
 
     if (hasError) return;
 
     onConfirm({
-      name: name.trim(),
-      macros: {
-        calories: validCalories!,
-        protein: validProtein!,
-        carbs: validCarbs!,
-        fat: validFat!,
-      },
-      servingSize: validServingSize!,
-      servingSizeUnit,
+      name: templateName.trim(),
+      items,
+      servingSize: validServingSize,
+      servingSizeUnit: servingSizeUnit.trim(),
     });
   };
-
-  const renderInput = (
-    label: string,
-    value: string,
-    onChangeText: (text: string) => void,
-    error: string,
-    placeholder: string,
-    keyboardType: "default" | "numeric" = "default",
-    suffix?: string
-  ) => (
-    <View style={styles.inputGroup}>
-      <Text style={[styles.label, { color: theme.text }]}>{label}</Text>
-      <View style={styles.inputWrapper}>
-        <TextInput
-          style={[
-            styles.input,
-            {
-              backgroundColor: theme.cardBg,
-              color: theme.text,
-              borderColor: error ? "#EF4444" : theme.border,
-            },
-          ]}
-          value={value}
-          onChangeText={onChangeText}
-          placeholder={placeholder}
-          placeholderTextColor={theme.icon}
-          keyboardType={keyboardType}
-          autoCapitalize={keyboardType === "default" ? "words" : "none"}
-          autoCorrect={false}
-        />
-        {suffix && (
-          <Text style={[styles.suffix, { color: theme.icon }]}>{suffix}</Text>
-        )}
-      </View>
-      {error ? <Text style={styles.errorText}>{error}</Text> : null}
-    </View>
-  );
 
   return (
     <SafeAreaView
@@ -214,205 +119,203 @@ export function TemplateForm({
         <View style={styles.backButton} />
       </View>
 
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.keyboardView}
-        keyboardVerticalOffset={0}
+      <ScrollView
+        style={styles.content}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
-        <ScrollView
-          style={styles.content}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-        >
-          {/* Template Name */}
-          <View style={styles.section}>
+        {/* Template Name */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>
+            Template Name
+          </Text>
+          <TextInput
+            style={[
+              styles.nameInput,
+              {
+                backgroundColor: theme.cardBg,
+                color: theme.text,
+                borderColor: nameError ? "#EF4444" : theme.border,
+              },
+            ]}
+            value={templateName}
+            onChangeText={(text) => {
+              setTemplateName(text);
+              setNameError("");
+            }}
+            placeholder="e.g., Post-Workout Meal, Breakfast Bowl"
+            placeholderTextColor={theme.icon}
+            autoCapitalize="words"
+          />
+          {nameError ? <Text style={styles.errorText}>{nameError}</Text> : null}
+        </View>
+
+        {/* Items Section */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
             <Text style={[styles.sectionTitle, { color: theme.text }]}>
-              Template Information
+              Items
             </Text>
-            {renderInput(
-              "Template Name",
-              name,
-              setName,
-              nameError,
-              "e.g., Breakfast Smoothie, Chicken & Rice"
-            )}
+            <TouchableOpacity
+              style={[styles.addButton, { backgroundColor: theme.tint }]}
+              onPress={() => setShowAddItemModal(true)}
+            >
+              <Ionicons name="add" size={20} color="#FFFFFF" />
+              <Text style={styles.addButtonText}>Add Item</Text>
+            </TouchableOpacity>
           </View>
 
-          {/* Nutrition Facts */}
+          {itemsError ? (
+            <Text style={[styles.errorText, { marginBottom: 12 }]}>
+              {itemsError}
+            </Text>
+          ) : null}
+
+          {items.length === 0 ? (
+            <View
+              style={[
+                styles.emptyState,
+                { backgroundColor: theme.cardBg, borderColor: theme.border },
+              ]}
+            >
+              <Ionicons
+                name="restaurant-outline"
+                size={40}
+                color={theme.icon}
+              />
+              <Text style={[styles.emptyText, { color: theme.icon }]}>
+                No items added yet
+              </Text>
+              <Text style={[styles.emptySubtext, { color: theme.icon }]}>
+                Tap &qout;Add Item&qout; to start building your template
+              </Text>
+            </View>
+          ) : (
+            <>
+              {items.map((item, index) => (
+                <TemplateItemCard
+                  key={index}
+                  item={item}
+                  onEdit={() => handleEditItem(index)}
+                  onDelete={() => handleDeleteItem(index)}
+                  theme={theme}
+                />
+              ))}
+            </>
+          )}
+        </View>
+
+        {/* Total Macros */}
+        {items.length > 0 && (
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: theme.text }]}>
-              Nutrition Facts
+              Total Nutrition (Per Serving)
             </Text>
             <View style={[styles.macroCard, { backgroundColor: theme.cardBg }]}>
-              {/* Calories - Large and prominent */}
-              <View style={styles.calorieGroup}>
-                <Text style={[styles.calorieLabel, { color: theme.icon }]}>
-                  Calories
-                </Text>
-                <TextInput
-                  style={[
-                    styles.calorieInput,
-                    {
-                      color: theme.text,
-                      borderBottomColor: caloriesError
-                        ? "#EF4444"
-                        : theme.border,
-                    },
-                  ]}
-                  value={calories}
-                  onChangeText={setCalories}
-                  placeholder="0"
-                  placeholderTextColor={theme.icon}
-                  keyboardType="numeric"
-                />
-                {caloriesError ? (
-                  <Text style={styles.errorTextSmall}>{caloriesError}</Text>
-                ) : null}
-              </View>
-
-              <View
-                style={[styles.divider, { backgroundColor: theme.border }]}
-              />
-
-              {/* Protein - Medium prominence */}
-              <View style={styles.macroGroup}>
-                <Text style={[styles.macroLabelMain, { color: theme.icon }]}>
-                  Protein
-                </Text>
-                <View style={styles.macroInputWrapper}>
-                  <TextInput
-                    style={[
-                      styles.macroInput,
-                      {
-                        color: theme.tint,
-                        borderBottomColor: proteinError
-                          ? "#EF4444"
-                          : theme.border,
-                      },
-                    ]}
-                    value={protein}
-                    onChangeText={setProtein}
-                    placeholder="0"
-                    placeholderTextColor={theme.icon}
-                    keyboardType="numeric"
-                  />
-                  <Text style={[styles.unit, { color: theme.icon }]}>g</Text>
+              <View style={styles.macroRow}>
+                <View style={styles.macroItem}>
+                  <Text style={[styles.macroValue, { color: theme.text }]}>
+                    {Math.round(totalMacros.calories)}
+                  </Text>
+                  <Text style={[styles.macroLabel, { color: theme.icon }]}>
+                    Calories
+                  </Text>
                 </View>
-                {proteinError ? (
-                  <Text style={styles.errorTextSmall}>{proteinError}</Text>
-                ) : null}
-              </View>
-
-              {/* Carbs & Fat - Side by side */}
-              <View style={styles.tertiaryRow}>
-                <View style={styles.tertiaryGroup}>
-                  <Text style={[styles.tertiaryLabel, { color: theme.icon }]}>
+                <View style={styles.macroItem}>
+                  <Text style={[styles.macroValue, { color: theme.tint }]}>
+                    {Math.round(totalMacros.protein * 10) / 10}g
+                  </Text>
+                  <Text style={[styles.macroLabel, { color: theme.icon }]}>
+                    Protein
+                  </Text>
+                </View>
+                <View style={styles.macroItem}>
+                  <Text style={[styles.macroValue, { color: theme.text }]}>
+                    {Math.round(totalMacros.carbs * 10) / 10}g
+                  </Text>
+                  <Text style={[styles.macroLabel, { color: theme.icon }]}>
                     Carbs
                   </Text>
-                  <View style={styles.tertiaryInputWrapper}>
-                    <TextInput
-                      style={[
-                        styles.tertiaryInput,
-                        {
-                          color: theme.text,
-                          borderBottomColor: carbsError
-                            ? "#EF4444"
-                            : theme.border,
-                        },
-                      ]}
-                      value={carbs}
-                      onChangeText={setCarbs}
-                      placeholder="0"
-                      placeholderTextColor={theme.icon}
-                      keyboardType="numeric"
-                    />
-                    <Text style={[styles.unitSmall, { color: theme.icon }]}>
-                      g
-                    </Text>
-                  </View>
-                  {carbsError ? (
-                    <Text style={styles.errorTextSmall}>{carbsError}</Text>
-                  ) : null}
                 </View>
-
-                <View
-                  style={[
-                    styles.verticalDivider,
-                    { backgroundColor: theme.border },
-                  ]}
-                />
-
-                <View style={styles.tertiaryGroup}>
-                  <Text style={[styles.tertiaryLabel, { color: theme.icon }]}>
+                <View style={styles.macroItem}>
+                  <Text style={[styles.macroValue, { color: theme.text }]}>
+                    {Math.round(totalMacros.fat * 10) / 10}g
+                  </Text>
+                  <Text style={[styles.macroLabel, { color: theme.icon }]}>
                     Fat
                   </Text>
-                  <View style={styles.tertiaryInputWrapper}>
-                    <TextInput
-                      style={[
-                        styles.tertiaryInput,
-                        {
-                          color: theme.text,
-                          borderBottomColor: fatError
-                            ? "#EF4444"
-                            : theme.border,
-                        },
-                      ]}
-                      value={fat}
-                      onChangeText={setFat}
-                      placeholder="0"
-                      placeholderTextColor={theme.icon}
-                      keyboardType="numeric"
-                    />
-                    <Text style={[styles.unitSmall, { color: theme.icon }]}>
-                      g
-                    </Text>
-                  </View>
-                  {fatError ? (
-                    <Text style={styles.errorTextSmall}>{fatError}</Text>
-                  ) : null}
                 </View>
               </View>
             </View>
           </View>
+        )}
 
-          {/* Serving Size */}
-          <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>
-              Serving Size
-            </Text>
-            {renderInput(
-              "Amount",
-              servingSize,
-              setServingSize,
-              servingSizeError,
-              "100",
-              "numeric",
-              servingSizeUnit
-            )}
-            <Text style={[styles.helperText, { color: theme.icon }]}>
-              This represents the portion size these nutrition facts are based
-              on
-            </Text>
+        {/* Serving Size */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>
+            Serving Size
+          </Text>
+          <View style={styles.servingRow}>
+            <View style={styles.servingInput}>
+              <TextInput
+                style={[
+                  styles.input,
+                  { backgroundColor: theme.cardBg, color: theme.text },
+                ]}
+                value={servingSize}
+                onChangeText={setServingSize}
+                placeholder="1"
+                placeholderTextColor={theme.icon}
+                keyboardType="numeric"
+              />
+            </View>
+            <View style={styles.servingUnitInput}>
+              <TextInput
+                style={[
+                  styles.input,
+                  { backgroundColor: theme.cardBg, color: theme.text },
+                ]}
+                value={servingSizeUnit}
+                onChangeText={setServingSizeUnit}
+                placeholder="serving"
+                placeholderTextColor={theme.icon}
+              />
+            </View>
           </View>
-        </ScrollView>
-
-        {/* Confirm Button */}
-        <View style={[styles.footer, { borderTopColor: theme.border }]}>
-          <TouchableOpacity
-            style={[
-              styles.confirmButton,
-              {
-                backgroundColor: theme.tint,
-                opacity: isLoading ? 0.5 : 1,
-              },
-            ]}
-            onPress={handleConfirmPress}
-            disabled={isLoading}
-          >
-            <Text style={styles.confirmButtonText}>{confirmButtonText}</Text>
-          </TouchableOpacity>
+          <Text style={[styles.helperText, { color: theme.icon }]}>
+            Represents one complete serving of all items combined
+          </Text>
         </View>
-      </KeyboardAvoidingView>
+      </ScrollView>
+
+      {/* Footer */}
+      <View style={[styles.footer, { borderTopColor: theme.border }]}>
+        <TouchableOpacity
+          style={[
+            styles.confirmButton,
+            {
+              backgroundColor: theme.tint,
+              opacity: isLoading ? 0.5 : 1,
+            },
+          ]}
+          onPress={handleConfirm}
+          disabled={isLoading}
+        >
+          <Text style={styles.confirmButtonText}>{confirmButtonText}</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Add/Edit Item Modal */}
+      <AddItemModal
+        visible={showAddItemModal}
+        onClose={() => {
+          setShowAddItemModal(false);
+          setEditingItemIndex(null);
+        }}
+        onSave={handleAddItem}
+        theme={theme}
+        editItem={editingItemIndex !== null ? items[editingItemIndex] : null}
+      />
     </SafeAreaView>
   );
 }
@@ -439,9 +342,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
   },
-  keyboardView: {
-    flex: 1,
-  },
   content: {
     flex: 1,
     paddingHorizontal: 16,
@@ -449,137 +349,97 @@ const styles = StyleSheet.create({
   section: {
     marginTop: 24,
   },
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+  },
   sectionTitle: {
     fontSize: 16,
     fontWeight: "600",
-    marginBottom: 16,
   },
-  inputGroup: {
-    marginBottom: 16,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: "500",
-    marginBottom: 8,
-  },
-  inputWrapper: {
+  addButton: {
     flexDirection: "row",
     alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    gap: 4,
   },
-  input: {
-    flex: 1,
+  addButtonText: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  nameInput: {
     borderWidth: 1,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 16,
   },
-  suffix: {
-    position: "absolute",
-    right: 16,
-    fontSize: 16,
-    fontWeight: "500",
-  },
   errorText: {
     color: "#EF4444",
     fontSize: 13,
     marginTop: 6,
   },
-  errorTextSmall: {
-    color: "#EF4444",
-    fontSize: 11,
+  emptyState: {
+    alignItems: "center",
+    padding: 32,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderStyle: "dashed",
+  },
+  emptyText: {
+    fontSize: 15,
+    fontWeight: "500",
+    marginTop: 12,
+  },
+  emptySubtext: {
+    fontSize: 13,
     marginTop: 4,
+    textAlign: "center",
+  },
+  macroCard: {
+    borderRadius: 12,
+    padding: 20,
+  },
+  macroRow: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+  },
+  macroItem: {
+    alignItems: "center",
+  },
+  macroValue: {
+    fontSize: 20,
+    fontWeight: "700",
+    marginBottom: 4,
+  },
+  macroLabel: {
+    fontSize: 12,
+  },
+  servingRow: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  servingInput: {
+    flex: 1,
+  },
+  servingUnitInput: {
+    flex: 2,
+  },
+  input: {
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    fontSize: 15,
   },
   helperText: {
     fontSize: 13,
     marginTop: 8,
     opacity: 0.7,
-  },
-  macroCard: {
-    borderRadius: 12,
-    padding: 20,
-    gap: 16,
-  },
-  calorieGroup: {
-    alignItems: "center",
-    paddingBottom: 12,
-  },
-  calorieLabel: {
-    fontSize: 14,
-    fontWeight: "500",
-    marginBottom: 8,
-  },
-  calorieInput: {
-    fontSize: 48,
-    fontWeight: "700",
-    textAlign: "center",
-    borderBottomWidth: 2,
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    minWidth: 120,
-  },
-  divider: {
-    height: 1,
-    opacity: 0.3,
-  },
-  macroGroup: {
-    gap: 8,
-  },
-  macroLabelMain: {
-    fontSize: 14,
-    fontWeight: "500",
-  },
-  macroInputWrapper: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  macroInput: {
-    fontSize: 24,
-    fontWeight: "600",
-    borderBottomWidth: 2,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    minWidth: 80,
-  },
-  unit: {
-    fontSize: 18,
-    fontWeight: "500",
-  },
-  tertiaryRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 16,
-  },
-  tertiaryGroup: {
-    flex: 1,
-    gap: 8,
-  },
-  tertiaryLabel: {
-    fontSize: 13,
-    fontWeight: "500",
-  },
-  tertiaryInputWrapper: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  tertiaryInput: {
-    fontSize: 18,
-    fontWeight: "600",
-    borderBottomWidth: 2,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    minWidth: 60,
-  },
-  unitSmall: {
-    fontSize: 14,
-    fontWeight: "500",
-  },
-  verticalDivider: {
-    width: 1,
-    height: 60,
-    marginTop: 20,
   },
   footer: {
     padding: 16,

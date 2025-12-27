@@ -67,6 +67,7 @@ export interface MealTemplate {
   use_count: number;
   last_used_at: string | null;
   created_at: string;
+  items: string; // stored as json string.
 }
 
 export interface Meal {
@@ -80,6 +81,16 @@ export interface Meal {
   date: string;
   template_id: number | null;
   created_at: string;
+}
+
+export interface TemplateItem {
+  name: string;
+  serving_size: number;
+  serving_size_unit: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
 }
 
 // For inserting a new user (omit auto-generated fields)

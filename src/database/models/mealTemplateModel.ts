@@ -7,43 +7,53 @@ import { MealTemplate, MealTemplateInsert } from "../types";
 export const createMealTemplate = async (
   templateData: MealTemplateInsert
 ): Promise<MealTemplate> => {
-  console.log("Create Meal template function got called");
-  const db = await openDatabase();
-  console.log("db connection okay");
+  console.log("🔵 createMealTemplate: Starting...");
 
-  console.log("done");
+  try {
+    const db = await openDatabase();
+    console.log("🔵 createMealTemplate: Database opened");
 
-  const result = await db.runAsync(
-    `INSERT INTO meal_templates (
-      user_id, name, calories, protein, carbs, fat, serving_size, serving_size_unit, is_favorite, use_count, last_used_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-      templateData.user_id,
-      templateData.name,
-      templateData.calories,
-      templateData.protein,
-      templateData.carbs,
-      templateData.fat,
-      templateData.serving_size,
-      templateData.serving_size_unit,
-      templateData.is_favorite || 0,
-      templateData.use_count || 0,
-      templateData.last_used_at || null,
-    ]
-  );
+    const result = await db.runAsync(
+      `INSERT INTO meal_templates (
+        user_id, name, items, calories, protein, carbs, fat, 
+        serving_size, serving_size_unit, is_favorite, use_count, last_used_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        templateData.user_id,
+        templateData.name,
+        templateData.items, // JSON string
+        templateData.calories,
+        templateData.protein,
+        templateData.carbs,
+        templateData.fat,
+        templateData.serving_size,
+        templateData.serving_size_unit,
+        templateData.is_favorite || 0,
+        templateData.use_count || 0,
+        templateData.last_used_at || null,
+      ]
+    );
 
-  console.log("Template creation good");
+    console.log(
+      "🔵 createMealTemplate: Insert successful, ID:",
+      result.lastInsertRowId
+    );
 
-  const template = await db.getFirstAsync<MealTemplate>(
-    "SELECT * FROM meal_templates WHERE id = ?",
-    [result.lastInsertRowId]
-  );
+    const template = await db.getFirstAsync<MealTemplate>(
+      "SELECT * FROM meal_templates WHERE id = ?",
+      [result.lastInsertRowId]
+    );
 
-  if (!template) {
-    throw new Error("Failed to create meal template");
+    if (!template) {
+      throw new Error("Failed to create meal template");
+    }
+
+    console.log("✅ createMealTemplate: Complete!");
+    return template;
+  } catch (error) {
+    console.error("❌ createMealTemplate: Error:", error);
+    throw error;
   }
-
-  return template;
 };
 /**
  * Get all templates for a user
