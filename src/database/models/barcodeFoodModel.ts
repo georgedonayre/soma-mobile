@@ -1,4 +1,5 @@
 import { supabase } from "@/src/lib/supabase";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { openDatabase } from "../db";
 
 export interface BarcodeFood {
@@ -181,6 +182,64 @@ export const createBarcodeFood = async (
     return food;
   } catch (error) {
     console.error("❌ createBarcodeFood: Error occurred:", error);
+    throw error;
+  }
+};
+
+/**
+ * Fetch all barcode foods from Supabase and cache locally in SQLite
+ */
+export const initializeBarcodeCache = async (): Promise<void> => {
+  console.log("🔹 initializeBarcodeCache: Starting...");
+
+  try {
+    const db = await openDatabase();
+    console.log("🔹 initializeBarcodeCache: Local database opened");
+
+    // 1️⃣ Fetch all barcode foods from Supabase
+    const { data: allFoods, error } = await supabase
+      .from("barcode_foods")
+      .select("*");
+
+    if (error) {
+      console.error("❌ initializeBarcodeCache: Supabase fetch error:", error);
+      return;
+    }
+
+    console.log(
+      `🔹 initializeBarcodeCache: Fetched ${allFoods.length} rows from Supabase`
+    );
+
+    // 2️⃣ Insert each row into local SQLite
+    for (const food of allFoods) {
+      await db.runAsync(
+        `INSERT OR IGNORE INTO barcode_foods (
+          barcode, product_name, serving_size, serving_unit, 
+          calories, protein, carbs, fat, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          food.barcode,
+          food.product_name,
+          food.serving_size,
+          food.serving_unit,
+          food.calories,
+          food.protein,
+          food.carbs,
+          food.fat,
+          food.created_at ?? new Date().toISOString(),
+        ]
+      );
+    }
+
+    console.log(
+      "✅ initializeBarcodeCache: Local cache populated successfully"
+    );
+
+    // 3️⃣ Optional: mark in AsyncStorage that cache is initialized
+    await AsyncStorage.setItem("hasFetchedBarcodeCache", "true");
+    console.log("✅ initializeBarcodeCache: Cache initialization flag set");
+  } catch (error) {
+    console.error("❌ initializeBarcodeCache: Error occurred:", error);
     throw error;
   }
 };

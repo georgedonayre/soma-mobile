@@ -22,6 +22,7 @@ import {
 } from "react-native";
 import { ThemedView } from "../components/themed-view";
 import { useAppContext } from "../context/app-context";
+import { initializeBarcodeCache } from "../database/models/barcodeFoodModel";
 import { Colors } from "../theme";
 import { calculateTargets } from "../utils/onboarding";
 import { routes } from "../utils/routes";
@@ -91,6 +92,7 @@ export default function Onboarding() {
       });
 
       await refreshUser();
+      await initializeBarcodeCache();
 
       router.replace(routes.dashboard);
     } catch (error) {
