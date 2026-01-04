@@ -1,6 +1,9 @@
 import TemplateCardCompact from "@/src/components/templates/template-card-compact";
 import { useAppContext } from "@/src/context/app-context";
-import { getAllTemplates } from "@/src/database/models/mealTemplateModel";
+import {
+  getAllTemplates,
+  syncTemplatesFromSupabase,
+} from "@/src/database/models/mealTemplateModel";
 import { MealTemplate } from "@/src/database/types";
 import { Colors } from "@/src/theme";
 import { routes } from "@/src/utils/routes";
@@ -8,7 +11,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
   FlatList,
+  Modal,
+  Pressable,
   StyleSheet,
   Text,
   TextInput,
@@ -26,6 +33,8 @@ export default function TemplatesHomeScreen() {
   const { user, isDbReady } = useAppContext();
   const [templates, setTemplates] = useState<MealTemplate[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isMenuVisible, setIsMenuVisible] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   useEffect(() => {
     if (!isDbReady || !user) return;
@@ -50,7 +59,69 @@ export default function TemplatesHomeScreen() {
   };
 
   const handleCreateTemplate = () => {
+    setIsMenuVisible(false);
     router.push(routes.createTemplateScreen);
+  };
+
+  const handleSyncTemplates = async () => {
+    setIsMenuVisible(false);
+
+    if (!user) {
+      Alert.alert("Error", "User not found. Please try again.");
+      return;
+    }
+
+    if (isSyncing) {
+      return; // Prevent multiple simultaneous syncs
+    }
+
+    try {
+      setIsSyncing(true);
+
+      // Perform the sync
+      const result = await syncTemplatesFromSupabase(user.id);
+
+      if (result.error) {
+        Alert.alert(
+          "Sync Failed",
+          `Unable to sync templates: ${result.error}`,
+          [{ text: "OK" }]
+        );
+        return;
+      }
+
+      // Refresh the local templates list
+      const updatedTemplates = await getAllTemplates(user.id);
+      setTemplates(updatedTemplates);
+
+      // Show success message
+      if (result.synced > 0) {
+        Alert.alert(
+          "Sync Complete",
+          `Successfully synced ${result.synced} ${
+            result.synced === 1 ? "template" : "templates"
+          }.`,
+          [{ text: "OK" }]
+        );
+      } else {
+        Alert.alert("Already Synced", "No new templates to sync from cloud.", [
+          { text: "OK" },
+        ]);
+      }
+    } catch (error) {
+      console.error("Error syncing templates:", error);
+      Alert.alert(
+        "Sync Error",
+        "An unexpected error occurred while syncing templates.",
+        [{ text: "OK" }]
+      );
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const toggleMenu = () => {
+    setIsMenuVisible(!isMenuVisible);
   };
 
   return (
@@ -69,11 +140,11 @@ export default function TemplatesHomeScreen() {
             Meal Templates
           </Text>
           <TouchableOpacity
-            onPress={handleCreateTemplate}
-            style={[styles.createButton, { backgroundColor: theme.tint }]}
+            onPress={toggleMenu}
+            style={styles.menuButton}
             activeOpacity={0.7}
           >
-            <Ionicons name="add" size={20} color="#FFFFFF" />
+            <Ionicons name="ellipsis-horizontal" size={24} color={theme.text} />
           </TouchableOpacity>
         </View>
 
@@ -125,6 +196,121 @@ export default function TemplatesHomeScreen() {
             showsVerticalScrollIndicator={false}
           />
         )}
+
+        {/* Action Menu Modal */}
+        <Modal
+          visible={isMenuVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setIsMenuVisible(false)}
+        >
+          <Pressable
+            style={styles.modalOverlay}
+            onPress={() => setIsMenuVisible(false)}
+          >
+            <View style={styles.menuContainer}>
+              <View
+                style={[
+                  styles.menuContent,
+                  {
+                    backgroundColor: theme.cardBg,
+                    borderColor: theme.border,
+                  },
+                ]}
+              >
+                {/* Create Template Action */}
+                <TouchableOpacity
+                  style={styles.menuItem}
+                  onPress={handleCreateTemplate}
+                  activeOpacity={0.7}
+                >
+                  <View
+                    style={[
+                      styles.menuIconContainer,
+                      { backgroundColor: theme.tint + "15" },
+                    ]}
+                  >
+                    <Ionicons name="add-circle" size={22} color={theme.tint} />
+                  </View>
+                  <View style={styles.menuTextContainer}>
+                    <Text style={[styles.menuItemText, { color: theme.text }]}>
+                      Create Template
+                    </Text>
+                    <Text
+                      style={[
+                        styles.menuItemDescription,
+                        { color: theme.icon },
+                      ]}
+                    >
+                      Add a new meal template
+                    </Text>
+                  </View>
+                  <Ionicons
+                    name="chevron-forward"
+                    size={20}
+                    color={theme.icon}
+                  />
+                </TouchableOpacity>
+
+                {/* Divider */}
+                <View
+                  style={[
+                    styles.menuDivider,
+                    { backgroundColor: theme.border },
+                  ]}
+                />
+
+                {/* Sync Templates Action */}
+                <TouchableOpacity
+                  style={styles.menuItem}
+                  onPress={handleSyncTemplates}
+                  activeOpacity={0.7}
+                  disabled={isSyncing}
+                >
+                  <View
+                    style={[
+                      styles.menuIconContainer,
+                      {
+                        backgroundColor: theme.tint + "15",
+                        opacity: isSyncing ? 0.5 : 1,
+                      },
+                    ]}
+                  >
+                    {isSyncing ? (
+                      <ActivityIndicator size="small" color={theme.tint} />
+                    ) : (
+                      <Ionicons name="sync" size={22} color={theme.tint} />
+                    )}
+                  </View>
+                  <View style={styles.menuTextContainer}>
+                    <Text
+                      style={[
+                        styles.menuItemText,
+                        { color: theme.text, opacity: isSyncing ? 0.5 : 1 },
+                      ]}
+                    >
+                      {isSyncing ? "Syncing..." : "Sync Templates"}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.menuItemDescription,
+                        { color: theme.icon, opacity: isSyncing ? 0.5 : 1 },
+                      ]}
+                    >
+                      {isSyncing ? "Please wait" : "Update from cloud"}
+                    </Text>
+                  </View>
+                  <Ionicons
+                    name="chevron-forward"
+                    size={20}
+                    color={theme.icon}
+                    style={{ opacity: isSyncing ? 0.5 : 1 }}
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Pressable>
+        </Modal>
       </SafeAreaView>
     </>
   );
@@ -155,10 +341,9 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginHorizontal: 8,
   },
-  createButton: {
+  menuButton: {
     width: 40,
     height: 40,
-    borderRadius: 20,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -212,5 +397,59 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     textAlign: "center",
     maxWidth: 280,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "flex-start",
+    alignItems: "flex-end",
+  },
+  menuContainer: {
+    marginTop: 60,
+    marginRight: 16,
+  },
+  menuContent: {
+    borderRadius: 16,
+    borderWidth: 1,
+    overflow: "hidden",
+    minWidth: 280,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  menuItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    gap: 12,
+  },
+  menuIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  menuTextContainer: {
+    flex: 1,
+  },
+  menuItemText: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginBottom: 2,
+  },
+  menuItemDescription: {
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  menuDivider: {
+    height: 1,
+    marginHorizontal: 16,
   },
 });

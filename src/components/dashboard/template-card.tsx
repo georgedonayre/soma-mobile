@@ -104,8 +104,7 @@ export default function TemplateCard({
         style={[styles.servingBadge, { backgroundColor: theme.background }]}
       >
         <Text style={[styles.servingText, { color: theme.icon }]}>
-          {template.serving_size}
-          {template.serving_size_unit}
+          {template.serving_size} {template.serving_size_unit}
         </Text>
       </View>
 

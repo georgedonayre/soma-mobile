@@ -1,3 +1,4 @@
+import { supabase } from "@/src/lib/supabase";
 import { openDatabase } from "../db";
 import { MealTemplate, MealTemplateInsert } from "../types";
 
@@ -7,54 +8,100 @@ import { MealTemplate, MealTemplateInsert } from "../types";
 export const createMealTemplate = async (
   templateData: MealTemplateInsert
 ): Promise<MealTemplate> => {
-  console.log("🔵 createMealTemplate: Starting...");
+  console.log("🔵 createMealTemplate: Starting...", templateData);
 
   try {
-    const db = await openDatabase();
-    console.log("🔵 createMealTemplate: Database opened");
+    // --------------------
+    // 1️⃣ Insert into Supabase
+    // --------------------
+    console.log("🔵 createMealTemplate: Inserting into Supabase...");
 
-    const result = await db.runAsync(
+    const { data: supabaseData, error: supabaseError } = await supabase
+      .from("meal_templates")
+      .insert([
+        {
+          user_id: templateData.user_id,
+          name: templateData.name,
+          items: JSON.parse(templateData.items), // JSONB in Supabase
+          calories: templateData.calories,
+          protein: templateData.protein,
+          carbs: templateData.carbs,
+          fat: templateData.fat,
+          serving_size: templateData.serving_size,
+          serving_size_unit: templateData.serving_size_unit,
+          is_favorite: Boolean(templateData.is_favorite),
+          use_count: templateData.use_count ?? 0,
+          last_used_at: templateData.last_used_at ?? null,
+          created_at: new Date().toISOString(),
+        },
+      ])
+      .select()
+      .single();
+
+    if (supabaseError) {
+      console.error("❌ createMealTemplate: Supabase error:", supabaseError);
+      throw supabaseError;
+    }
+
+    console.log(
+      "✅ createMealTemplate: Supabase insert successful",
+      supabaseData
+    );
+
+    // --------------------
+    // 2️⃣ Insert into local SQLite
+    // --------------------
+    console.log("🔵 createMealTemplate: Opening local database...");
+    const db = await openDatabase();
+    console.log("✅ createMealTemplate: Local database opened");
+
+    await db.runAsync(
       `INSERT INTO meal_templates (
-        user_id, name, items, calories, protein, carbs, fat, 
-        serving_size, serving_size_unit, is_favorite, use_count, last_used_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        id, user_id, name, items, calories, protein, carbs, fat,
+        serving_size, serving_size_unit, is_favorite, use_count, last_used_at, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
+        supabaseData.id, // IMPORTANT: keep IDs in sync
         templateData.user_id,
         templateData.name,
-        templateData.items, // JSON string
+        templateData.items, // stored as string in SQLite
         templateData.calories,
         templateData.protein,
         templateData.carbs,
         templateData.fat,
         templateData.serving_size,
         templateData.serving_size_unit,
-        templateData.is_favorite || 0,
-        templateData.use_count || 0,
-        templateData.last_used_at || null,
+        templateData.is_favorite ? 1 : 0,
+        templateData.use_count ?? 0,
+        templateData.last_used_at ?? null,
+        supabaseData.created_at,
       ]
     );
 
-    console.log(
-      "🔵 createMealTemplate: Insert successful, ID:",
-      result.lastInsertRowId
-    );
+    console.log("✅ createMealTemplate: Local SQLite insert successful");
 
+    // --------------------
+    // 3️⃣ Fetch inserted row from SQLite
+    // --------------------
     const template = await db.getFirstAsync<MealTemplate>(
       "SELECT * FROM meal_templates WHERE id = ?",
-      [result.lastInsertRowId]
+      [supabaseData.id]
     );
 
     if (!template) {
-      throw new Error("Failed to create meal template");
+      throw new Error(
+        "❌ createMealTemplate: Failed to retrieve newly inserted template"
+      );
     }
 
-    console.log("✅ createMealTemplate: Complete!");
+    console.log("✅ createMealTemplate: Complete!", template);
     return template;
   } catch (error) {
-    console.error("❌ createMealTemplate: Error:", error);
+    console.error("❌ createMealTemplate: Error occurred:", error);
     throw error;
   }
 };
+
 /**
  * Get all templates for a user
  */
@@ -261,4 +308,86 @@ export const bulkCreateTemplates = async (
       );
     }
   });
+};
+
+/**
+ * Sync templates from Supabase to local SQLite
+ * Fetches all templates for a user from Supabase and populates local database
+ */
+export const syncTemplatesFromSupabase = async (
+  userId: number
+): Promise<{ synced: number; error?: string }> => {
+  console.log("🔹 syncTemplatesFromSupabase: Starting for user", userId);
+
+  try {
+    const db = await openDatabase();
+    console.log("🔹 syncTemplatesFromSupabase: Local database opened");
+
+    // 1️⃣ Fetch all templates for the user from Supabase
+    const { data: supabaseTemplates, error: fetchError } = await supabase
+      .from("meal_templates")
+      .select("*")
+      .eq("user_id", userId);
+
+    if (fetchError) {
+      console.error(
+        "❌ syncTemplatesFromSupabase: Supabase fetch error:",
+        fetchError
+      );
+      return { synced: 0, error: fetchError.message };
+    }
+
+    console.log(
+      `🔹 syncTemplatesFromSupabase: Fetched ${supabaseTemplates.length} templates from Supabase`
+    );
+
+    if (supabaseTemplates.length === 0) {
+      console.log("ℹ️ syncTemplatesFromSupabase: No templates to sync");
+      return { synced: 0 };
+    }
+
+    // 2️⃣ Insert each template into local SQLite using a transaction
+    let syncedCount = 0;
+
+    await db.withTransactionAsync(async () => {
+      for (const template of supabaseTemplates) {
+        await db.runAsync(
+          `INSERT OR REPLACE INTO meal_templates (
+            id, user_id, name, items, calories, protein, carbs, fat,
+            serving_size, serving_size_unit, is_favorite, use_count, 
+            last_used_at, created_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            template.id,
+            template.user_id,
+            template.name,
+            JSON.stringify(template.items), // Convert JSONB to string for SQLite
+            template.calories,
+            template.protein,
+            template.carbs,
+            template.fat,
+            template.serving_size,
+            template.serving_size_unit,
+            template.is_favorite ? 1 : 0,
+            template.use_count ?? 0,
+            template.last_used_at ?? null,
+            template.created_at,
+          ]
+        );
+        syncedCount++;
+      }
+    });
+
+    console.log(
+      `✅ syncTemplatesFromSupabase: Successfully synced ${syncedCount} templates`
+    );
+
+    return { synced: syncedCount };
+  } catch (error) {
+    console.error("❌ syncTemplatesFromSupabase: Error occurred:", error);
+    return {
+      synced: 0,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
 };

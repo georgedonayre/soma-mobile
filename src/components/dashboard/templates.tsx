@@ -42,7 +42,13 @@ export default function Templates({
     <View style={styles.container}>
       {/* Section Header with Create Button */}
       <View style={styles.header}>
-        <View style={styles.headerLeft}>
+        <TouchableOpacity
+          style={styles.headerLeft}
+          onPress={() => {
+            router.push(routes.templatesHomeScreen);
+          }}
+          activeOpacity={0.7}
+        >
           <View
             style={[
               styles.iconContainer,
@@ -51,6 +57,7 @@ export default function Templates({
           >
             <Ionicons name="fast-food" size={20} color={theme.tint} />
           </View>
+
           <View>
             <Text style={[styles.title, { color: theme.text }]}>Quick Add</Text>
             <Text style={[styles.subtitle, { color: theme.icon }]}>
@@ -58,7 +65,8 @@ export default function Templates({
               {templates.length === 1 ? "template" : "templates"}
             </Text>
           </View>
-        </View>
+        </TouchableOpacity>
+
         <TouchableOpacity
           style={[styles.createButton, { backgroundColor: theme.tint }]}
           onPress={handleCreateTemplate}
